@@ -41,10 +41,10 @@ class ProductManagement(LoginInfo):
 
         ######################################## 后续等姜完善后再进行调试 ###########################
         # 修改Spu基本信息
-        url = self.host + 'sysback/update/product/basicinfo/queryBasicInfoListFromSpu?menuId=252&buttonId=148'
+        url = self.host + '/sysback/update/product/basicinfo/queryBasicInfoListFromSpu?menuId=252&buttonId=148'
         data = {'productKey':"{}".format(JycList['productUuid'])}
         try:
-            res = requests.post(url, headers=self.form_header, data=data ).json()
+            res = requests.post(url, headers=self.form_header, data = data ).json()
         except Exception as e:
             assert False, '修改基本信息，接口请求失败\nurl:{}\ndata:{}\nexception:{}'.format(url, data, e)
 
