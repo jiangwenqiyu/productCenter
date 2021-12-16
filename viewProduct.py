@@ -14,6 +14,7 @@ class ProductManagement(LoginInfo):
         
     def SpuManagement(self, JycList):
         print('开始验证SPU管理')
+        #test
         #查询创建得SPU是否存在
         endTime = time.time()+90
         while True:
@@ -577,6 +578,6 @@ class ProductManagement(LoginInfo):
         # print(CalcUnit)
         return CalcUnit
 
-# if __name__ == '__main__':
-#    q = ProductManagement()
-#    q.run()
+if __name__ == '__main__':
+    q = ProductManagement()
+    q.run()
