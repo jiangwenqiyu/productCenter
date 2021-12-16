@@ -119,9 +119,9 @@ class CommonFunction(LoginInfo):
         url = self.host + '/sysback/login/getLoginInfo?menuId=238&buttonId=1'
         try:
             res = requests.post(url, headers = self.json_header, json={}).json()
-        except:
-            assert False, '获取登录信息，请求失败'
-        assert res['retMessage'] == 'success', '登录失败'
+        except Exception as e:
+            assert False, '获取登录信息，请求失败\nurl:{}\n{}'.format(url, e)
+        assert res['retMessage'] == 'success', '登录失败\nurl:{}\nres:{}'.format(url, res)
         self.manage_area = res['retData']['hrAreaId']
         self.user_id = res['retData']['userId']
         self.orgId = res['retData']['hrDepartmentNumber']
