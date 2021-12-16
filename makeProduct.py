@@ -326,7 +326,7 @@ class CommonFunction(LoginInfo):
             res = requests.post(url, headers = self.json_header, json=data).json()
         except Exception as e:
             assert False, '接口请求失败,{}\n{}'.format(url, e)
-        assert res['retStatus'] == '1', '生成代码失败, {}'.format(res['retMessage'])
+        assert res['retStatus'] == '1', '生成代码失败\nurl:{}\ndata:{}\nres:{}'.format(url, data, res['retMessage'])
         standard = res['retData']['addState']['acceptanceAddState']
         qualification = res['retData']['addState']['qualificationAddState']
         self.productUuid = res['retData']['productUuid']
@@ -1107,48 +1107,82 @@ class CommonFunction(LoginInfo):
             else:
                 assert False,'即将设置的城市，既不在参照自己，也不在需要设置参照里, {}\ncode:{}, self:{}, other:{}'.format(productUuid, i['cityCode'], tempSelf, tempOther)
             data.append(temp)
-            try:
-                res = requests.post(url, headers = self.json_header, json=data).json()
-            except Exception as e:
-                assert False, '接口请求失败,{}\n{}'.format(url, e)
-            assert res['retStatus'] == '1', '待准入完善供货信息，提交参照信息报错，{}\nurl:{}\ndata:{}\nres:{}'.format(productUuid, url, data, res)
-            print('3.参照关系提交成功')
+        try:
+            res = requests.post(url, headers = self.json_header, json=data).json()
+        except Exception as e:
+            assert False, '接口请求失败,{}\n{}'.format(url, e)
+        assert res['retStatus'] == '1', '待准入完善供货信息，提交参照信息报错，{}\nurl:{}\ndata:{}\nres:{}'.format(productUuid, url, data, res)
+        print('3.参照关系提交成功')
 
         # 4.创建供货区域价格
         url = self.host + '/sysback/supplyareaprice/batchCreateSupplyAreaPrice?batchState=prepareing&menuId=239&buttonId=2'
         data = list()
 
         # 单计量
-        if self.secondUnitName == '':
+        if self.secondUnitName == None:
             # 全国统一
-            if self.purchasePriceType == '1':
+            if purchasePriceType == '1':
+                if self.addPriceType == '1':
 
-                priceCommitParam['supplyUuid'] = '11297'
-                priceCommitParam['purchasePriceType'] = purchasePriceType
-                priceCommitParam['processRateOrPrice'] = ''  # 加工比例或金额
-                priceCommitParam['fujiliang'] = ''
-                priceCommitParam['supplyUnit'] = ''
-                priceCommitParam['mainUnitCostPrice'] = ''   # 主计量成本价
-                priceCommitParam['rebateRatio'] = ''   # 返利折合比例
-                priceCommitParam['isMainSupply'] = '1'
-                priceCommitParam['templateCityUuid'] = '110100'
-                priceCommitParam['mainPurchasePrice'] = ''    # 主计量进价
-                priceCommitParam['rebateOrPrice'] = '11297'
-                priceCommitParam['mainConvertRatio'] = '11297'
-                priceCommitParam['processChargesRatio'] = '11297'
-                priceCommitParam['factoryFacePrice'] = '11297'
-                priceCommitParam['packRateOrPrice'] = '11297'
-                priceCommitParam['zhugong'] = '11297'
-                priceCommitParam['carriageRateOrPrice'] = '11297'
-                priceCommitParam['packRatio'] = '11297'
-                priceCommitParam['enterPriceType'] = '11297'
-                priceCommitParam['supplyMainUnit'] = '11297'
-                priceCommitParam['freightRatio'] = '11297'
+                    # priceCommitParam['supplyUuid'] = '11297'
+                    # priceCommitParam['purchasePriceType'] = purchasePriceType
+                    # priceCommitParam['processRateOrPrice'] = ''  # 加工比例或金额
+                    # priceCommitParam['fujiliang'] = ''
+                    # priceCommitParam['supplyUnit'] = ''
+                    # priceCommitParam['mainUnitCostPrice'] = ''   # 主计量成本价
+                    # priceCommitParam['rebateRatio'] = ''   # 返利折合比例
+                    # priceCommitParam['isMainSupply'] = '1'
+                    # priceCommitParam['templateCityUuid'] = '110100'
+                    # priceCommitParam['mainPurchasePrice'] = ''    # 主计量进价
+                    # priceCommitParam['rebateOrPrice'] = '11297'
+                    # priceCommitParam['mainConvertRatio'] = '11297'
+                    # priceCommitParam['processChargesRatio'] = '11297'
+                    # priceCommitParam['factoryFacePrice'] = '11297'
+                    # priceCommitParam['packRateOrPrice'] = '11297'
+                    # priceCommitParam['zhugong'] = '11297'
+                    # priceCommitParam['carriageRateOrPrice'] = '11297'
+                    # priceCommitParam['packRatio'] = '11297'
+                    # priceCommitParam['enterPriceType'] = '11297'
+                    # priceCommitParam['supplyMainUnit'] = '11297'
+                    # priceCommitParam['freightRatio'] = '11297'
 
 
+                    # data.append(priceCommitParam)
 
+                    # 先用老的
+                    temp = dict()
+                    self.mainPurchasePrice = random.randint(100, 200)  # 进价
+                    self.factoryFacePrice = round(random.randint(0, 100) + random.random(), 2)   # 厂家面价
+                    self.purchasePriceNote = self.getString(10)   # 进价备注
+                    self.freightRatio = random.randint(0, 10)        # 运费折合比例
+                    self.processChargesRatio = random.randint(0, 10)   # 加工折合比例
+                    self.packRatio = random.randint(0, 10)       # 包装折合比例
+                    self.rebateRatio = random.randint(0, 10)         # 返利折合比例
+                    self.mainUnitCostPrice = self.mainPurchasePrice + self.freightRatio + self.processChargesRatio + self.packRatio - self.rebateRatio   # 成本价
 
-                data.append(priceCommitParam)
+                    temp['addPriceType'] = self.addPriceType
+                    temp['mainPurchasePrice'] =  self.mainPurchasePrice  # 进价
+                    temp['factoryFacePrice'] = self.factoryFacePrice   # 厂家面价
+                    temp['purchasePriceNote'] = self.purchasePriceNote   # 进价备注
+                    temp['freightRatio'] = self.freightRatio       # 运费折合比例
+                    temp['processChargesRatio'] = self.processChargesRatio   # 加工折合比例
+                    temp['packRatio'] = self.packRatio       # 包装折合比例
+                    temp['rebateRatio'] = self.rebateRatio         # 返利折合比例
+                    temp['isMainSupply'] = '1'    # 主供
+
+                    temp['mainUnitCostPrice'] = self.mainUnitCostPrice   # 成本价
+                    temp['mainUnitStr'] = self.mainUnitName      # 计量单位
+                    temp['mainUnitUuid'] = ''   # 计量单位id，传空
+                    temp['productUuid'] = productUuid
+                    temp['purchasePrice'] = 0   # 进价，单计量直接是 0
+                    temp['purchasePriceType'] = purchasePriceType   # 进价类型，1 统一  2 区域
+                    temp['skuNo'] = self.skuNo
+                    temp['specDetailStr'] = specDetailStr
+                    temp['supplyUuid'] = '11297'
+                    temp['templateCityUuid'] = '110100'
+                    temp['unitName'] = self.mainUnitName
+                    temp['mainConvertRatio'] = ''  # 主计量转换率
+                    data.append(temp)
 
             # 区域
             else:
@@ -1165,7 +1199,7 @@ class CommonFunction(LoginInfo):
             res = requests.post(url, headers = self.json_header, json=data).json()
         except Exception as e:
             assert False, '接口请求失败,{}\n{}'.format(url, e)
-        assert res['retStatus'] == '1', '待准入完善供货信息，提交价格信息报错，{}\nres:{}'.format(productUuid, res)
+        assert res['retStatus'] == '1', '待准入完善供货信息，提交价格信息报错, {}\nurl:{}\ndata:{}\nres:{}'.format(productUuid, url,data, res)
         print('4.价格提交成功')
 
     # 完善售价，全国统一
@@ -1587,7 +1621,7 @@ class MakePro(CommonFunction):
 
         print('\n*************************************************')
         print('生成代码:')
-        productUuid, standard, qualification = self.generateCode(31350, '1', '2', '2')
+        productUuid, standard, qualification = self.generateCode(LoginInfo.cate, '1', '2', '2')
 
         print('\n*************************************************')
         print('完善基本信息:')

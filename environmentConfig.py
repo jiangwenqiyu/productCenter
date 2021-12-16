@@ -25,7 +25,7 @@ class Env():
     # connect = pymysql.connect(host =my_host, port = my_port, user = my_user, password = my_password, database = database)
     # cur = connect.cursor()
 
-    test_dingToken = 'https://oapi.dingtalk.com/robot/send?access_token=f7acf4dbf372ecedb2a93113aebf6eee6d8278de40599279f59a2774c5566ef5'
+
 
     form_header = {'Content-Type': 'application/x-www-form-urlencoded',
                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'}
@@ -34,9 +34,15 @@ class Env():
 
     # token
     fangzhen_token = 'e957c609b1554018ae97fe1dc86e9cf1'
-    t4_token = ''
-
+    t4_token = 'd6297f6008f84fa8ba7956b597db5db8'
     token = ''
+
+    # 分类
+    fangzhen_cate = '31350'
+    t4_cate = '13000'
+    cate = ''
+
+    test_dingToken = 'https://oapi.dingtalk.com/robot/send?access_token=f7acf4dbf372ecedb2a93113aebf6eee6d8278de40599279f59a2774c5566ef5'
 
 
 

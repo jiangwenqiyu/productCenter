@@ -38,17 +38,22 @@ def run_flow(env):
 
 
 
+
+
+
 def main():
     if sys.argv[1] == 't4':
         print('测试环境:t4')
         LoginInfo.host = LoginInfo.t4_host
         LoginInfo.token = LoginInfo.t4_token
+        LoginInfo.cate = LoginInfo.t4_cate
         LoginInfo.form_header['cookie'] = 'uc_token={}'.format(LoginInfo.token)
         LoginInfo.json_header['cookie'] = 'uc_token={}'.format(LoginInfo.token)
     else:
         print('测试环境:仿真')
         LoginInfo.host = LoginInfo.fangzhen_host
         LoginInfo.token = LoginInfo.fangzhen_token
+        LoginInfo.cate = LoginInfo.fangzhen_cate
         LoginInfo.form_header['cookie'] = 'uc_token={}'.format(LoginInfo.token)
         LoginInfo.json_header['cookie'] = 'uc_token={}'.format(LoginInfo.token)
 
