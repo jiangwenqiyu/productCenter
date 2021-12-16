@@ -28,9 +28,11 @@ class Env():
 
 
     form_header = {'Content-Type': 'application/x-www-form-urlencoded',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'}
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                   'Connection': 'close'}
     json_header = {'Accept': 'application/json, text/plain, */*',
-                    'Content-Type': 'application/json;charset=UTF-8'}
+                    'Content-Type': 'application/json;charset=UTF-8',
+                   'Connection': 'close'}
 
     # token
     fangzhen_token = 'e957c609b1554018ae97fe1dc86e9cf1'
