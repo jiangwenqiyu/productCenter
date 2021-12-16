@@ -25,8 +25,6 @@ class Env():
     # connect = pymysql.connect(host =my_host, port = my_port, user = my_user, password = my_password, database = database)
     # cur = connect.cursor()
 
-
-
     form_header = {'Content-Type': 'application/x-www-form-urlencoded',
                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'}
     json_header = {'Accept': 'application/json, text/plain, */*',

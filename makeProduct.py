@@ -1146,8 +1146,8 @@ class CommonFunction(LoginInfo):
                     # priceCommitParam['supplyMainUnit'] = '11297'
                     # priceCommitParam['freightRatio'] = '11297'
 
-
                     # data.append(priceCommitParam)
+
 
                     # 先用老的
                     temp = dict()

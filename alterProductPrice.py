@@ -7,7 +7,7 @@ import requests
 class changeCostPrice(LoginInfo):
 
     def changeCost(self, info):
-        # 查询
+        # 查询商品
         url = self.host + '/sysback/supplyskurel/getSupplySkuRelList?menuId=291&buttonId=133'
         if info['isPurchaseMultiUnit'] == '1':
             data = {"nowPage":1,"pageShow":10,"supplyCode":"","supplyName":"","searchParam":"[{\"name\":\"productName_s\",\"value\":\"\"},{\"name\":\"spuNo_s\",\"value\":\"\"},{\"name\":\"skuNo_s\",\"value\":\"" + info['skuNo'] + "\"},{\"name\":\"isPurchaseMultiUnit_s\",\"value\":\"1\"},{\"name\":\"uuidNotInListStr_s\",\"value\":\"\"},{\"name\":\"uuidListStr_s\",\"value\":\"\"}]","isQueryRel":False}
