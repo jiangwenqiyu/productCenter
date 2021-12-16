@@ -11,7 +11,7 @@ import viewProduct
 def run_flow(env):
     # obj = makeProduct.MakePro()
     # info = obj.run()
-    # print(info)
+    # print(info)  ttt
 
     obj_makeProduct = makeProduct.MakePro()   # 制作商品
     obj_view = viewProduct.ProductManagement()      # 查看并修改

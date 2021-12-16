@@ -577,3 +577,6 @@ class ProductManagement(LoginInfo):
         # print(CalcUnit)
         return CalcUnit
 
+# if __name__ == '__main__':
+#    q = ProductManagement()
+#    q.run()
