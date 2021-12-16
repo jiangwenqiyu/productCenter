@@ -31,12 +31,13 @@ def run_flow(env):
         data = {'text':{'content':'{}'.format(word)},
                 'msgtype':'text'
                 }
-        res = requests.post(LoginInfo.test_dingToken, json=data).json()
+        res = requests.post(LoginInfo.dingToken, json=data).json()
         assert res['errmsg'] == 'ok', '钉钉报警失败'
         return
 
 
 def main():
+    LoginInfo.dingToken = sys.argv[2]
     if sys.argv[1] == 't4':
         print('测试环境:t4')
         LoginInfo.host = LoginInfo.t4_host
