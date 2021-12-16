@@ -42,7 +42,7 @@ class ProductManagement(LoginInfo):
         data = {'productKey':"" + JycList['productUuid'] + ""}
         res = requests.post(url, headers=self.form_header, data=data ).json()
         # for i in res['retData'][0]['attrList']:
-        #     assert i['attrName'] == '', ''
+        #     assert i['attrName'] == '', '' 啊
         # 判断Spu基本信息是否正确
         assert res['retData'][0]['attrList'] !=[],'url : {} \n 入参 : {} \n 结果 : {} \n 基础属性获取失败'.format(url , data , res['retMessage'])
         assert res['redata'][0]['spuNo'] == JycList['spuNo'],'spuNO 不正确，不符合创建时的 Spu, 创建时的 Spu : {}, 修改时的 Spu : {}'.format(JycList['spuNo'], res['redata'][0]['spuNo'])
