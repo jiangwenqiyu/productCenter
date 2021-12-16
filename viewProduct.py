@@ -4,7 +4,7 @@ import time
 import random
 from random import randint,random,uniform,sample
 from makeProduct import CommonFunction
-import requeryBasicInfoListFromSpu
+import re
 
 class ProductManagement(LoginInfo):
     def run(self, JycList):
