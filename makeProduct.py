@@ -463,7 +463,7 @@ class CommonFunction(LoginInfo):
                 self.manage_season_product = obj['optionHtml']   # 中文
             # 售卖平台,暂时写死，签约平台
             marketing_saleplat = 'marketing_saleplat_signed'
-            self.marketing_saleplat = 'optionHtml'
+            self.marketing_saleplat = 'marketing_saleplat_signed'
 
         # 归类信息
         assert len(res['retData']['taxList'][0]['allValueOptions'])>=1, '{},完善管理信息失败，没有归类'.format(productUuid)
