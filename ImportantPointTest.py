@@ -2,14 +2,14 @@ from environmentConfig import LoginInfo
 import requests
 
 
+class alterCosePrice(LoginInfo):
+    pass
 
 
 
-class Test(LoginInfo):
+class Test(alterCosePrice):
     # 参照比例
     def templateRate(self):
-        # LoginInfo.json_header['cookie'] = 'uc_token=e957c609b1554018ae97fe1dc86e9cf1'
-        # LoginInfo.host = 'http://product.pre.xinfangsheng.com'
 
         import xlrd
         work = xlrd.open_workbook('参照比例配置.xlsx')
@@ -65,13 +65,22 @@ class Test(LoginInfo):
                         assert_word += str(e) + '\n'
 
         if assert_word != '':
-            assert False, assert_word
+            assert False, '自动校验参照比例异常\n' + assert_word
 
-
+    # 大量修改进价
+    def alterCostPrice(self):
+        pass
 
 
 
     def run(self):
+        print('\n*************************************************')
+        print('校验参照比例')
         self.templateRate()
+
+        print('\n*************************************************')
+        print('大量修改进价')
+        self.alterCostPrice()
+
 
 # Test().run()

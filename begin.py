@@ -16,6 +16,7 @@ def run_flow(env):
     print('-----------------------------------------------------------')
     print('-----------------------------------------------------------')
     print('开始流程测试')
+    global flow_flag
 
     obj_makeProduct = makeProduct.MakePro()   # 制作商品
     obj_view = viewProduct.ProductManagement()      # 查看并修改
@@ -28,7 +29,9 @@ def run_flow(env):
         obj_view.run(info)
         obj_alterPrice.run(info)
         obj_alterBasic.run(info)
+        flow_flag = True
     except Exception as e:
+        flow_flag = False
         word = '测试环境:{}\n{}'.format(env,e)
         data = {'text':{'content':'{}'.format(word)},
                 'msgtype':'text'
@@ -42,11 +45,14 @@ def run_single(env):
     print('-----------------------------------------------------------')
     print('-----------------------------------------------------------')
     print('开始单点测试')
+    global single_flag
 
     obj = ImportantPointTest.Test()
     try:
         obj.run()
+        single_flag = True
     except Exception as e:
+        single_flag = False
         word = '测试环境:{}\n{}'.format(env,e)
         data = {'text':{'content':'{}'.format(word)},
                 'msgtype':'text'
@@ -56,6 +62,8 @@ def run_single(env):
         return
 
 
+flow_flag = False
+single_flag = False
 def main():
     LoginInfo.dingToken = sys.argv[2]
     # LoginInfo.dingToken = 'https://oapi.dingtalk.com/robot/send?access_token=e68f44036d2948f7942fc1d4ee10bb8718e42545f87dac2b324b6e7ced94351a'
@@ -78,6 +86,15 @@ def main():
 
     run_flow(sys.argv[1])
     run_single(sys.argv[1])
+
+    if flow_flag and single_flag:
+        print('测试结束, 全程未发现错误')
+    elif flow_flag==True and single_flag==False:
+        print('测试结束, 单点测试发生错误')
+    elif flow_flag==False and single_flag==True:
+        print('测试结束, 流程测试发生错误')
+    else:
+        print('测试结束, 流程发生错误, 单点发生错误')
 
 
 if __name__ == '__main__':
