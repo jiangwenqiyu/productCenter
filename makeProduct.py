@@ -463,7 +463,7 @@ class CommonFunction(LoginInfo):
                 self.manage_season_product = obj['optionHtml']   # 中文
             # 售卖平台,暂时写死，签约平台
             marketing_saleplat = 'marketing_saleplat_signed'
-            self.marketing_saleplat = 'optionHtml'
+            self.marketing_saleplat = 'marketing_saleplat_signed'
 
         # 归类信息
         assert len(res['retData']['taxList'][0]['allValueOptions'])>=1, '{},完善管理信息失败，没有归类'.format(productUuid)
@@ -1110,7 +1110,7 @@ class CommonFunction(LoginInfo):
         try:
             res = requests.post(url, headers = self.json_header, json=data).json()
         except Exception as e:
-            assert False, '接口请求失败,{}\n{}'.format(url, e)
+            assert False, '提交参照关系,接口请求失败\nurl:{}\ndata:{}\nexception:{}'.format(url, data, e)
         assert res['retStatus'] == '1', '待准入完善供货信息，提交参照信息报错，{}\nurl:{}\ndata:{}\nres:{}'.format(productUuid, url, data, res)
         print('3.参照关系提交成功')
 

@@ -38,11 +38,25 @@ class changeCostPrice(LoginInfo):
             assert len(res['retData']) == len(info['tempSelf']), '修改进价，区域进价，展示的行数不对。spu:{}\nexp:{}\nfact:{}'.format(info['spuNo'],len(info['tempSelf']),len(res['retData']))
         print('带出商品成功')
 
-    def run(self, info):
-        print('\n*************************************************')
-        print('验证修改进价')
-        self.changeCostPrice(info)
+        # 验证基本数据
 
+
+
+class changeSalePrice(LoginInfo):
+    pass
+
+
+class changePrice(changeCostPrice, changeSalePrice):
+    def run(self):
+        return
+        print('\n*************************************************')
+        print('修改进价')
+
+
+
+
+        print('\n*************************************************')
+        print('修改售价')
 
 
 
