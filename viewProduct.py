@@ -14,7 +14,6 @@ class ProductManagement(LoginInfo):
         
     def SpuManagement(self, JycList):
         print('开始验证SPU管理')
-        #111111
         #test Commit
         #查询创建得SPU是否存在
         endTime = time.time()+90
