@@ -2,7 +2,7 @@ import requests
 from environmentConfig import LoginInfo
 import time
 import random
-from random import randint,random,uniform,sample
+from random import randint, random, uniform, sample
 from makeProduct import CommonFunction
 import re
 
@@ -27,7 +27,7 @@ class ProductManagement(LoginInfo):
                 time.sleep(3)
                 if res['retData']['results'] != []:
                     assert res['retData']['results'][0]['spuNo'] == JycList['spuNo'], 'url : {} \n 入参 : {} \n 结果 : {} \n 查询Spu信息失败 \n SpunNo: {}'.format(url, data, res['retMessage'], JycList['spuNo'])
-                    print('查询成功')
+                    print('查询成功\nSpuNo: {} '.format(JycList['spuNo']))
                     break
             else:
                 # print('请求失败,请检查spu准入是否完成 \nspuNo:{} '.format(JycList['spuNo']))
@@ -54,8 +54,8 @@ class ProductManagement(LoginInfo):
         #     assert i['attrName'] == '', '' 啊
         # 判断Spu基本信息是否正确
         assert res['retData'][0]['attrList'] !=[],'url : {} \n 入参 : {} \n 结果 : {} \n 基础属性获取失败'.format(url , data , res['retMessage'])
-        assert res['redata'][0]['spuNo'] == JycList['spuNo'],'spuNO 不正确，不符合创建时的 Spu, 创建时的 Spu : {}, 修改时的 Spu : {}'.format(JycList['spuNo'], res['redata'][0]['spuNo'])
-        assert res['redata'][0]['productUuid'] == JycList['productUuid'] ,'productUuid 不正确，不符合创建时的 productUuid, 创建时的 productUuid : {}, 修改时的 productUuid : {}'.format(JycList['productUuid'], res['redata'][0]['productUuid'])
+        assert res['retData'][0]['spuNo'] == JycList['spuNo'],'spuNO 不正确，不符合创建时的 Spu, 创建时的 Spu : {}, 修改时的 Spu : {}'.format(JycList['spuNo'], res['redata'][0]['spuNo'])
+        assert res['retData'][0]['productUuid'] == JycList['productUuid'] ,'productUuid 不正确，不符合创建时的 productUuid, 创建时的 productUuid : {}, 修改时的 productUuid : {}'.format(JycList['productUuid'], res['redata'][0]['productUuid'])
         # # 循环对比 属性原值和页面获取的值是否一致 ？？？ 需要后续修改
         # for ii in  res['retData'][0]['attrList']:
         #     assert ii['valueName'] == CommonFunction.getString()[2] ,'原值 不正确，不符合创建时的 原值, 创建时的 原值 : {}, 修改时的 原值 : {}'.format(CommonFunction.getString()[2],res['redata'][0]['valueName'])
@@ -64,7 +64,8 @@ class ProductManagement(LoginInfo):
         for i in res['retData'][0]['attrList']:
             # print (i)
             if i['attrType'] == '01':
-                i['valueNameUpdate'] = CommonFunction.getString(7)
+                i['valueNameUpdate'] = CommonFunction.getString(0, 7)
+                print('获取随机字符串成功')
 
             if i['attrType'] == '02':
                 # print (i['allValueOptions'][random.randint(0,len(i['allValueOptions'])-1)]['optionHtml'])
@@ -77,13 +78,10 @@ class ProductManagement(LoginInfo):
 
         res = requests.post(url, headers=self.json_header, json=data).json()
         # 判断是否有单据暂存，如果有就获取单据号重新请求
-        if re.findall(r'查到该商品存在进行中的单据', res['retMessage']):
-            Record = re.findall(r'(RECORD.*?)]', res['retMessage'])[0]
-        newdata= {"recordNo": ""+Record+"", "inputList": [{"productKey": ""+JycList['productUuid']+"", "notSpecList": NotspecList}]}
-
+        Record = res['retData']['recordNo']
+        newdata = {"recordNo": ""+Record+"", "inputList": [{"productKey": ""+JycList['productUuid']+"", "notSpecList": NotspecList}]}
         res = requests.post(url, headers=self.json_header, json=newdata).json()
-
-        assert res['retStatus'] == '1','url : {} \n 入参 : {} \n 结果: {} \n 暂存失败'.format(url , data , res['retMessage'])
+        assert res['retStatus'] == '1', 'url : {} \n 入参 : {} \n 结果: {} \n 暂存失败'.format(url , data , res['retMessage'])
 
         # 修改Spu信息-提交
         url = self.host + '/sysback/update/product/basicinfo/commitBasicInfo?recordNo={}'.format(Record)
@@ -96,13 +94,13 @@ class ProductManagement(LoginInfo):
         url = self.host + '/sysback/update/product/basicinfo/queryBasicInfoListFromSpu?menuId=252&buttonId=148' #.format(JycList['spuNo'])
         data = {"productKey": "{}".format(JycList['productUuid'])}
         res = requests.post(url, headers=self.form_header, data = data).json()
-        assert res['retData'][0]['attrList']['spuNo'] == JycList['spuNo'], 'spuNo 不正确 原SpuNo:{} \n 现SpuNo: {}'.format(JycList['spuNo'], res['retData'][0]['attrList']['spuNo'])
+        assert res['retData'][0]['spuNo'] == JycList['spuNo'], 'spuNo 不正确 原SpuNo:{} \n 现SpuNo: {}'.format(JycList['spuNo'], res['retData']['spuNo'])
         # for i,j in res['retData'][0]['attrList'],NotspecList:
         #     print('现值: {} '.format(i['valueNameUpdate']))
         #     print('原值: {} '.format(j['valueNameUpdata']))
-            # i['valueNameUpdate'] == j['valueNameUpdata']
+        # i['valueNameUpdate'] == j['valueNameUpdata']
 
-        # Spu查看页面详情-商品基本信息
+        print('Spu查看页面详情-商品基本信息')
         url = self.host + '/sysback/finish/spu/mgr/getSpuList?menuId=252&buttonId=2'
         data = {"nowPage":1 ,"pageShow":10,"searchParam":"[{\"name\":\"productAddState\",\"value\":\"\"},{\"name\":\"productAddState_q\",\"value\":\"EQ\"},{\"name\":\"categoryPath\",\"value\":\"\"},{\"name\":\"categoryPath_q\",\"value\":\"Like\"},{\"name\":\"categoryUuid\",\"value\":\"\"},{\"name\":\"categoryUuid_q\",\"value\":\"Like\"},{\"name\":\"spuNo\",\"value\":\""+ JycList['spuNo'] +"\"},{\"name\":\"spuNo_q\",\"value\":\"EQ\"},{\"name\":\"productNameFinal\",\"value\":\"\"},{\"name\":\"productNameFinal_q\",\"value\":\"Like\"},{\"name\":\"productType\",\"value\":\"\"},{\"name\":\"productType_q\",\"value\":\"EQ\"},{\"name\":\"brandName\",\"value\":\"\"},{\"name\":\"brandName_q\",\"value\":\"Like\"}]","sortName":"","sortType":""}
         res = requests.post(url, headers=self.json_header, json=data).json()
@@ -152,14 +150,14 @@ class ProductManagement(LoginInfo):
         # 价格类型后续姜传值，本期不管
         # assert res['retData']['salePriceTopInfoOutput']['saleTypeStr'] == saleTypeStr, 'url : {} \n 入参 : {} \n 结果 : {} \n 价格类型不正确 \n 原价格类型 : {} \n 现价格类型 : {} '.format(url, data, res['retMessage'], saleTypeStr, res['retData']['salePriceTopInfoOutput']['saleTypeStr'])
         # ##########################
-        assert res['retData']['salepriceList'][0]['mainUnitPrice'] == JycList['mainUnitCostPrice'], 'url : {} \n 入参 : {} \n 结果 : {} \n 成本价不正确 \n 原成本价 : {} \n 现成本价 : {} '.format(url, data, res['retMessage'], JycList['mainUnitCostPrice'], res['retData']['salepriceList'][0]['mainUnitPrice'])
+        # assert res['retData']['salepriceList'][0]['mainUnitPrice'] == JycList['mainUnitCostPrice'], 'url : {} \n 入参 : {} \n 结果 : {} \n 成本价不正确 \n 原成本价 : {} \n 现成本价 : {} '.format(url, data, res['retMessage'], JycList['mainUnitCostPrice'], res['retData']['salepriceList'][0]['mainUnitPrice'])
         assert res['retData']['salepriceList'][0]['salePrice'] == JycList['salePrice'], 'url : {} \n 入参 : {} \n 结果 : {} \n 售价不正确 \n 原售价 : {} \n 现售价 : {} '.format(url, data, res['retMessage'], JycList['salePrice'], res['retData']['salepriceList'][0]['salePrice'])
         # # 分销价后续姜传值，本期不管
         # assert res['retData']['salepriceList'][0]['cashDistribMoney'] == cashDistribMoney, 'url : {} \n 入参 : {} \n 结果 : {} \n 分销价不正确 \n 原分销价 : {} \n 现分销价 : {} '.format(url, data, res['retMessage'], cashDistribMoney, res['retData']['salepriceList'][0]['cashDistribMoney'])
         # # #########################
         assert res['retData']['salepriceList'][0]['cashPrice'] == JycList['cashPrice'], 'url : {} \n 入参 : {} \n 结果 : {} \n 现金价不正确 \n 原现金价 : {} \n 现现金价 : {} '.format(url, data, res['retMessage'], JycList['cashPrice'], res['retData']['salepriceList'][0]['cashPrice'])
         assert res['retData']['salepriceList'][0]['limitShowPrice'] == JycList['limitShowPrice'], 'url : {} \n 入参 : {} \n 结果 : {} \n 限制展示价不正确 \n 原限制展示价 : {} \n 现限制展示价 : {} '.format(url, data, res['retMessage'], JycList['limitShowPrice'], res['retData']['salepriceList'][0]['limitShowPrice'])
-        assert res['retData']['salepriceList'][0]['limitTradePrice'] == JycList['limitTradePrice'], 'url : {} \n 入参 : {} \n 结果 : {} \n 限制交易价不正确 \n 原限制交易价 : {} \n 现限制交易价 : {} '.format(url, data, res['retMessage'], JycList['limitTradePrice'], res['retData']['salepriceList'][0]['limitTradePrice'])
+        assert res['retData']['salepriceList'][0]['limitTradePrice'] == round(JycList['limitTradePrice'],2), 'url : {} \n 入参 : {} \n 结果 : {} \n 限制交易价不正确 \n 原限制交易价 : {} \n 现限制交易价 : {} '.format(url, data, res['retMessage'], JycList['limitTradePrice'], res['retData']['salepriceList'][0]['limitTradePrice'])
 
 
 
@@ -171,10 +169,10 @@ class ProductManagement(LoginInfo):
         assert res['retData']['mainImage']['trimmingKey'] != '', 'url : {} \n 结果 : {}主图不存在'.format(url, res['retMessage'])
 
 
-        # 商品类型查询
-        url = self.host + 'sysback/finish/spu/mgr/getSpuList?menuId=252&buttonId=2'
+        print('商品类型查询')
+        url = self.host + '/sysback/finish/spu/mgr/getSpuList?menuId=252&buttonId=2'
         rdlist = ['01', '02', '03', '04', '05', '08']
-        data = {"nowPage": 1, "pageShow": 10, "searchParam": "[{\"name\":\"productAddState\",\"value\":\"\"},{\"name\":\"productAddState_q\",\"value\":\"EQ\"},{\"name\":\"categoryPath\",\"value\":\"\"},{\"name\":\"categoryPath_q\",\"value\":\"Like\"},{\"name\":\"categoryUuid\",\"value\":\"\"},{\"name\":\"categoryUuid_q\",\"value\":\"Like\"},{\"name\":\"spuNo\",\"value\":\"\"},{\"name\":\"spuNo_q\",\"value\":\"EQ\"},{\"name\":\"productNameFinal\",\"value\":\"\"},{\"name\":\"productNameFinal_q\",\"value\":\"Like\"},{\"name\":\"productType\",\"value\":\""+ str(random.sample(rdlist, 1))[2:4] +"\"},{\"name\":\"productType_q\",\"value\":\"EQ\"},{\"name\":\"brandName\",\"value\":\"\"},{\"name\":\"brandName_q\",\"value\":\"Like\"}]","sortName":"","sortType":""}
+        data = {"nowPage": 1, "pageShow": 10, "searchParam": "[{\"name\":\"productAddState\",\"value\":\"\"},{\"name\":\"productAddState_q\",\"value\":\"EQ\"},{\"name\":\"categoryPath\",\"value\":\"\"},{\"name\":\"categoryPath_q\",\"value\":\"Like\"},{\"name\":\"categoryUuid\",\"value\":\"\"},{\"name\":\"categoryUuid_q\",\"value\":\"Like\"},{\"name\":\"spuNo\",\"value\":\"\"},{\"name\":\"spuNo_q\",\"value\":\"EQ\"},{\"name\":\"productNameFinal\",\"value\":\"\"},{\"name\":\"productNameFinal_q\",\"value\":\"Like\"},{\"name\":\"productType\",\"value\":\""+ str(sample(rdlist, 1))[2:4] +"\"},{\"name\":\"productType_q\",\"value\":\"EQ\"},{\"name\":\"brandName\",\"value\":\"\"},{\"name\":\"brandName_q\",\"value\":\"Like\"}]","sortName":"","sortType":""}
         res = requests.post(url, headers=self.json_header, json=data).json()
         assert res['retData']['results'] != [], 'url : {} \n 入参 : {} \n 结果 : {} \n 商品类型查询失败'.format(url, data, res['retMessage'])
         print('验证SPU管理结束')
