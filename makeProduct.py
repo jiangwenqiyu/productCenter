@@ -1110,7 +1110,7 @@ class CommonFunction(LoginInfo):
         try:
             res = requests.post(url, headers = self.json_header, json=data).json()
         except Exception as e:
-            assert False, '接口请求失败,{}\n{}'.format(url, e)
+            assert False, '提交参照关系,接口请求失败\nurl:{}\ndata:{}\nexception:{}'.format(url, data, e)
         assert res['retStatus'] == '1', '待准入完善供货信息，提交参照信息报错，{}\nurl:{}\ndata:{}\nres:{}'.format(productUuid, url, data, res)
         print('3.参照关系提交成功')
 
