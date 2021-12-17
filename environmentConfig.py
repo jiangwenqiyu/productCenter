@@ -49,6 +49,7 @@ class Env():
     dingToken = ''
 
 
+
 class LoginInfo(Env):
     def __init__(self):
         pass
