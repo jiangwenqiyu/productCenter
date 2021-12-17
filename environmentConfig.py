@@ -25,8 +25,6 @@ class Env():
     # connect = pymysql.connect(host =my_host, port = my_port, user = my_user, password = my_password, database = database)
     # cur = connect.cursor()
 
-
-
     form_header = {'Content-Type': 'application/x-www-form-urlencoded',
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
                    'Connection': 'close'}
@@ -44,8 +42,11 @@ class Env():
     t4_cate = '13000'
     cate = ''
 
+    # 正式群
     test_dingToken = 'https://oapi.dingtalk.com/robot/send?access_token=f7acf4dbf372ecedb2a93113aebf6eee6d8278de40599279f59a2774c5566ef5'
-
+    # 调试群
+    tiaoshi_token = 'https://oapi.dingtalk.com/robot/send?access_token=e68f44036d2948f7942fc1d4ee10bb8718e42545f87dac2b324b6e7ced94351a'
+    dingToken = ''
 
 
 class LoginInfo(Env):

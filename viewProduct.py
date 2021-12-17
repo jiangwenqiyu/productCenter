@@ -27,20 +27,29 @@ class ProductManagement(LoginInfo):
                 time.sleep(3)
                 if res['retData']['results'] != []:
                     assert res['retData']['results'][0]['spuNo'] == JycList['spuNo'], 'url : {} \n 入参 : {} \n 结果 : {} \n 查询Spu信息失败 \n SpunNo: {}'.format(url, data, res['retMessage'], JycList['spuNo'])
+                    print('查询成功')
                     break
             else:
                 # print('请求失败,请检查spu准入是否完成 \nspuNo:{} '.format(JycList['spuNo']))
-                assert False, '请求失败,请检查spu准入是否完成! \nspuNo:{} '.format(JycList['spuNo'])
-        # 验证是否能够修改Spu
+                assert False, '查询失败,请检查spu准入是否完成! \nspuNo:{} '.format(JycList['spuNo'])
+
+        # 验证是否能够修改Spu, 从SPU查看页面点击修改
         url = self.host + '/sysback/spu/query/checkPerm?spuNo={}&menuId=252&buttonId=148'.format(JycList['spuNo'])
-        data = {"spuNo": ""+JycList['spuNo']+""}
+        data = {"spuNo": "{}".format(JycList['spuNo'])}
         res = requests.post(url, headers=self.json_header, json=data).json()
         assert res['retMessage'] == '成功', 'url : {} \n 入参 : {} \n 结果 : {} \n 修改Spu失败'.format(url, data, res['retMessage'])
+
         ######################################## 后续等姜完善后再进行调试 ###########################
         # 修改Spu基本信息
-        url = self.host + 'sysback/update/product/basicinfo/queryBasicInfoListFromSpu?menuId=252&buttonId=148'
-        data = {'productKey':"" + JycList['productUuid'] + ""}
-        res = requests.post(url, headers=self.form_header, data=data ).json()
+        url = self.host + '/sysback/update/product/basicinfo/queryBasicInfoListFromSpu?menuId=252&buttonId=148'
+        data = {'productKey':"{}".format(JycList['productUuid'])}
+        try:
+            res = requests.post(url, headers=self.form_header, data = data ).json()
+        except Exception as e:
+            assert False, '修改基本信息，接口请求失败\nurl:{}\ndata:{}\nexception:{}'.format(url, data, e)
+
+        assert res['retStatus'] == '1', '修改基本信息，获取数据失败\nurl:{}\ndata:{}\nres:{}'.format(url, data, res)
+        print('修改基本信息，获取数据成功')
         # for i in res['retData'][0]['attrList']:
         #     assert i['attrName'] == '', '' 啊
         # 判断Spu基本信息是否正确
@@ -85,8 +94,8 @@ class ProductManagement(LoginInfo):
 
         # 验证提交Spu数据是否生效
         url = self.host + '/sysback/update/product/basicinfo/queryBasicInfoListFromSpu?menuId=252&buttonId=148' #.format(JycList['spuNo'])
-        data = {"productKey": "" + JycList['productUuid'] + ""}
-        res = requests.post(url, headers=self.json_header, json=data).json()
+        data = {"productKey": "{}".format(JycList['productUuid'])}
+        res = requests.post(url, headers=self.form_header, data = data).json()
         assert res['retData'][0]['attrList']['spuNo'] == JycList['spuNo'], 'spuNo 不正确 原SpuNo:{} \n 现SpuNo: {}'.format(JycList['spuNo'], res['retData'][0]['attrList']['spuNo'])
         # for i,j in res['retData'][0]['attrList'],NotspecList:
         #     print('现值: {} '.format(i['valueNameUpdate']))
@@ -169,6 +178,8 @@ class ProductManagement(LoginInfo):
         res = requests.post(url, headers=self.json_header, json=data).json()
         assert res['retData']['results'] != [], 'url : {} \n 入参 : {} \n 结果 : {} \n 商品类型查询失败'.format(url, data, res['retMessage'])
         print('验证SPU管理结束')
+
+
     def SkuManagement(self, JycList):
         print('开始验证SKU管理')
         # skuNo 查询
@@ -563,6 +574,7 @@ class ProductManagement(LoginInfo):
         # print('======================核对SKU提交数据结束=======================')
         print('验证SKU管理结束')
 
+
     def GetCalcUnit(self):
         CalcUnitList = list()
         url = self.host + '/sysback/unit/baseQueryList?menuId=253&buttonId=148'
@@ -577,6 +589,4 @@ class ProductManagement(LoginInfo):
         # print(CalcUnit)
         return CalcUnit
 
-# if __name__ == '__main__':
-#    q = ProductManagement()
-#    q.run()
+
