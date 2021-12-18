@@ -34,7 +34,7 @@ class Env():
 
     # token
     fangzhen_token = 'e957c609b1554018ae97fe1dc86e9cf1'
-    t4_token = 'd6297f6008f84fa8ba7956b597db5db8'
+    t4_token = 'e957c609b1554018ae97fe1dc86e9cf1'
     shengchan_token = 'cb3bac116e7c4b70b793e1d38340d6c0'
     token = ''
 
