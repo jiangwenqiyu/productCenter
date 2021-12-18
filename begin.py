@@ -67,7 +67,7 @@ single_flag = False
 def main():
     LoginInfo.dingToken = sys.argv[2]
     # LoginInfo.dingToken = 'https://oapi.dingtalk.com/robot/send?access_token=e68f44036d2948f7942fc1d4ee10bb8718e42545f87dac2b324b6e7ced94351a'
-    a = '仿真'
+    a = 't4'
     if sys.argv[1] == 't4':
         print('测试环境:t4')
         LoginInfo.host = LoginInfo.t4_host
