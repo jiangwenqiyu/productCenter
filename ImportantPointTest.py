@@ -141,19 +141,71 @@ class alterCosePrice(LoginInfo):
             assert False, '修改进价提交请求失败{}'.format(excep_temp.format(url, data, e))
         assert res['retStatus'] == '1', '修改进价提交返回失败{}'.format(error_temp.format(url, data, res))
         print('提交成功')
-        return priceInfo
+        return priceInfo, recordNo
 
-    # 对比数据, 提交之后判断1分钟，如果状态没变过来，认为审批失败
-    def compareData(self, exp_priceInfo):
-        pass
+    # 检查审核通过
+    def viewStatus(self, recordNo):
+        url = self.host + '/sysback/product/update/getSpuByRecord/querySpuList?menuId=270&buttonId=2'
+        data = {"nowPage":1,"pageShow":10,"searchParam":"[{\"name\":\"spuNo\",\"value\":\"\"},{\"name\":\"productNameFinal\",\"value\":\"\"},{\"name\":\"recordNo\",\"value\":\"" + recordNo + "\"},{\"name\":\"pusherName\",\"value\":\"\"},{\"name\":\"pusherDeptName\",\"value\":\"\"},{\"name\":\"pushTime\",\"value\":\"\"},{\"name\":\"commitType\",\"value\":\"\"},{\"name\":\"commitState\",\"value\":\"\"},{\"name\":\"spuNo_q\",\"value\":\"Like\"},{\"name\":\"productNameFinal_q\",\"value\":\"Like\"},{\"name\":\"recordNo_q\",\"value\":\"Like\"},{\"name\":\"pusherName_q\",\"value\":\"Like\"},{\"name\":\"pusherDeptName_q\",\"value\":\"Like\"},{\"name\":\"pushTime_q\",\"value\":\"RightLike\"},{\"name\":\"commitType_q\",\"value\":\"IN\"},{\"name\":\"commitState_q\",\"value\":\"Like\"}]","sortName":"","sortType":""}
+        try:
+            res = requests.post(url, headers = self.json_header, json = data).json()
+        except:
+            return False
+
+        if res['retData']['results'][0]['commitState'] == 'OK':
+            return True
+        else:
+            return False
+
+    # 对比数据, 提交之后判断2分钟，如果状态没变过来，认为审批失败
+    def compareData(self, exp_priceInfo, recordNo):
+        url = self.host + '/sysback/supplyareaprice/getUpdateDetailByRecordNo?recordNo={}&menuId=270&buttonId=2'.format(recordNo)
+        data = {}
+        try:
+            res = requests.post(url, headers = self.json_header, json = data).json()
+        except Exception as e:
+            assert False, '查询进价单据请求失败\nurl:{}\n单据:{}\nexc:{}'.format(url, recordNo, e)
+
+        assert res['retStatus'] == '1', '查询进价单据返回失败\nurl:{}\n单据:{}\nres:{}'.format(url, recordNo, res)
+        # 构建字典  供应商+sku+城市:进价原值、进价现值、成本价原值、成本价现值
+        show_info = dict()
+        show_key = set()
+        for i in res['retData']['listDetail']:
+            key = '{},{},{}'.format(i['supplyUuid'], i['skuNo'], i['templateCityUuid'])
+            temp = []
+            temp.append(i['mainPurchasePrice'])
+            temp.append(i['mainPurchasePriceUpdate'])
+            temp.append(i['mainUnitCostPrice'])
+            temp.append(i['mainUnitCostPriceUpdate'])
+            show_info[key] = temp
+            show_key.add(key)
+        # 构建字典
+        exp_info = dict()
+        exp_key = set()
+        for i in exp_priceInfo:
+            pass
 
 
     # 大量修改进价
     def alterCostPrice(self):
         supplySku_500 = self.getSupplySku_500()
         priceInfo, allInfo = self.getSupplySkuCityPrice(supplySku_500)
-        exp_priceInfo = self.alterPurchasePrice(priceInfo, allInfo)
-        self.compareData(exp_priceInfo)
+        exp_priceInfo, recordNo = self.alterPurchasePrice(priceInfo, allInfo)
+
+        t = time.time() + 120
+        flag = False
+        while time.time() < t:
+            if self.viewStatus(recordNo):
+                flag = True
+                break
+            time.sleep(2)
+
+        if flag == False:
+            assert False, '修改进价单据审核失败, {}'.format(recordNo)
+
+        self.compareData(exp_priceInfo, recordNo)
+
+
 
 
 class Test(alterCosePrice):
