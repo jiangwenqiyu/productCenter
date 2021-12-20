@@ -4,6 +4,7 @@ import random
 import time
 import json
 
+
 excep_temp = '\nurl:{}\ndata:{}\nexception:{}'
 error_temp = '\nurl:{}\ndata:{}\nres:{}'
 
@@ -140,7 +141,7 @@ class alterCosePrice(LoginInfo):
             res = requests.post(url, headers = self.json_header, json=data).json()
         except Exception as e:
             assert False, '修改进价提交请求失败{}'.format(excep_temp.format(url, data, e))
-        assert res['retStatus'] == '1', '修改进价提交返回失败{}'.format(error_temp.format(url, data, res))
+        assert res['retStatus'] == '1', '修改进价提交返回失败{}\n单据号:{}'.format(error_temp.format(url, data, res), recordNo)
         print('提交成功')
         return priceInfo, recordNo
 
@@ -174,6 +175,7 @@ class alterCosePrice(LoginInfo):
         # 构建字典  供应商+sku+城市:进价原值、进价现值、成本价原值、成本价现值
         show_info = dict()
         show_key = set()
+        sk = []
         for i in res['retData']['listDetail']:
             key = '{},{},{}'.format(i['supplyUuid'], i['skuNo'], i['templateCityUuid'])
             temp = []
@@ -183,6 +185,7 @@ class alterCosePrice(LoginInfo):
             temp.append(i['mainUnitCostPriceUpdate'])
             show_info[key] = temp
             show_key.add(key)
+            sk.append(key)
         # 构建字典
         exp_info = dict()
         exp_key = set()
@@ -197,7 +200,15 @@ class alterCosePrice(LoginInfo):
             exp_key.add(key)
 
         # 判断行数
-        assert len(show_key) == len(res['retData']['listDetail']), '进价单据中，按照供应商-sku-城市维度,存在重复行数据\n单据:{}'.format(recordNo)
+        if len(show_key) != len(res['retData']['listDetail']):
+            for k in show_key:
+                for t in range(len(sk)):
+                    if k == sk[t]:
+                        del sk[t]
+                        break
+
+            assert len(show_key) == len(res['retData']['listDetail']), '进价单据中，按照供应商-sku-城市维度,存在重复行数据\n单据:{}\n重复的内容:{}'.format(recordNo, sk)
+
         assert show_key ^ exp_key == set(), '进价单据，提交时候的数据行数，与查看单据的行数，不一致\n单据:{}\n提交-单据:{}\n单据-提交:{}'.format(recordNo, exp_key-show_key, show_key-exp_key)
 
         # 对比进价原值、现值
@@ -286,7 +297,7 @@ class viewSalePrice(alterCosePrice):
             for x in info:
                 if i[0] == x[0] and i[1] == x[1] and i[3] == x[2]:  # 供应商、sku相同,且供货信息的被参照城市，等于修改进价的城市
                     # 按照当前参照比例，计算应该的成本价
-                    currentCost = ((i[4] * 100) * (x[12])) / 10000
+                    currentCost = ((i[4] * 100) * (x[12] * 100)) / 10000
                     # 构建数据字典  sku-销售省:成本价
                     key = '{},{}'.format(i[1], i[2])
                     rel[key] = currentCost
@@ -349,8 +360,8 @@ class viewSalePrice(alterCosePrice):
                 cashRate = float(obj[1])
                 distributeRate = float(obj[2])
                 saleRate = float(obj[3])
-                print(cost, cashRate, distributeRate, saleRate)
-                print(type(cost), type(cashRate), type(distributeRate), type(saleRate))
+                # print(cost, cashRate, distributeRate, saleRate)
+                # print(type(cost), type(cashRate), type(distributeRate), type(saleRate))
                 if addType == '1':  # 金额
                     cash = (cost*100 + cashRate*100) / 100
                     distribute = (cash * 100 - distribute*100) / 100
@@ -374,9 +385,8 @@ class viewSalePrice(alterCosePrice):
         record = record + "_1"
         data = {"nowPage":1,"pageShow":10,"searchParam":"[{\"name\":\"spuNo\",\"value\":\"\"},{\"name\":\"productNameFinal\",\"value\":\"\"},{\"name\":\"recordNo\",\"value\":\"" + record + "\"},{\"name\":\"pusherName\",\"value\":\"\"},{\"name\":\"pusherDeptName\",\"value\":\"\"},{\"name\":\"pushTime\",\"value\":\"\"},{\"name\":\"commitType\",\"value\":\"\"},{\"name\":\"commitState\",\"value\":\"\"},{\"name\":\"spuNo_q\",\"value\":\"Like\"},{\"name\":\"productNameFinal_q\",\"value\":\"Like\"},{\"name\":\"recordNo_q\",\"value\":\"Like\"},{\"name\":\"pusherName_q\",\"value\":\"Like\"},{\"name\":\"pusherDeptName_q\",\"value\":\"Like\"},{\"name\":\"pushTime_q\",\"value\":\"RightLike\"},{\"name\":\"commitType_q\",\"value\":\"IN\"},{\"name\":\"commitState_q\",\"value\":\"Like\"}]","sortName":"","sortType":""}
 
-        flag = False
         if status:
-            t = time.time() + 90
+            t = time.time() + 120
 
             while time.time() < t:
                 try:
@@ -386,13 +396,18 @@ class viewSalePrice(alterCosePrice):
 
                 if len(res['retData']['results']) != 0:
                     flag = True
-                    break
+                    print('查询售价单据成功')
+                    return True
+            assert False, '超过2分钟没有查询到售价单据'
+
         else:
             res = requests.post(url, headers = self.json_header, json = data).json()
             if len(res['retData']['results']) != 0:
                 assert False, '进价单据中没有符合的数据，不应生成售价单据\n单据号:{}'.format(record)
             else:
                 pass
+
+        return False
 
 
 
@@ -522,7 +537,7 @@ class Test(viewSalePrice):
         # self.templateRate()
 
         print('\n*************************************************')
-        print('大量修改进价')
+        print('批量修改进价')
         info, record = self.alterCostPrice()
 
         print('\n*************************************************')
