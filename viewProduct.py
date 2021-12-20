@@ -100,6 +100,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers=self.json_header, json=data).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
         # 判断是否有单据暂存，如果有就获取单据号重新请求
         Record = res['retData']['recordNo']
         newdata = {"recordNo": ""+Record+"", "inputList": [{"productKey": ""+JycList['productUuid']+"", "notSpecList": NotspecList}]}
