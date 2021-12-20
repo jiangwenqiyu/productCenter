@@ -6,8 +6,26 @@ from makeProduct import CommonFunction
 
 class ProductManagement(CommonFunction):
     def run(self, JycList):
+        self.SupplyInfoQuerry(JycList)
         self.SpuManagement(JycList)  #已完成
         self.SkuManagement(JycList)  #已完成
+
+    def GetCalcUnit(self):
+        CalcUnitList = list()
+        url = self.host + '/sysback/unit/baseQueryList?menuId=253&buttonId=148'
+        data = {"nowPage": 1, "pageShow": 10, "searchParam": "[{\"name\":\"unitName\",\"value\":\"\"},{\"name\":\"unitName_q\",\"value\":\"Like\"}]"}
+        res = requests.post(url, headers=self.json_header, json=data).json()
+        data['pageShow'] = res['retData']['totalNum']
+        try:
+            res = requests.post(url, headers=self.json_header, json=data).json()
+        except Exception as e:
+            assert False, '接口请求失败, {}\n{}'.format(url, e)
+        for i in res['retData']['results']:
+            CalcUnitList.append(i['unitName'])
+
+        CalcUnit = sample(CalcUnitList, 1)[0]
+        # print(CalcUnit)
+        return CalcUnit
         
     def SpuManagement(self, JycList):
         print('开始验证SPU管理')
@@ -666,19 +684,59 @@ class ProductManagement(CommonFunction):
         print('======================核对SKU提交数据结束=======================')
         print('验证SKU管理完成')
 
-    def GetCalcUnit(self):
-        CalcUnitList = list()
-        url = self.host + '/sysback/unit/baseQueryList?menuId=253&buttonId=148'
-        data = {"nowPage": 1, "pageShow": 10, "searchParam": "[{\"name\":\"unitName\",\"value\":\"\"},{\"name\":\"unitName_q\",\"value\":\"Like\"}]"}
-        res = requests.post(url, headers=self.json_header, json=data).json()
-        data['pageShow'] = res['retData']['totalNum']
-        try:
-            res = requests.post(url, headers=self.json_header, json=data).json()
-        except Exception as e:
-            assert False, '接口请求失败, {}\n{}'.format(url, e)
-        for i in res['retData']['results']:
-            CalcUnitList.append(i['unitName'])
+    def SupplyInfoQuerry(self, comParison):
+        print('开始验证供货信息查询数据')
+        # 查询创建得SPU是否存在
+        endTime = time.time() + 90
+        calc = 1
+        total = 30
+        while True:
+            if time.time() < endTime:
+                url = self.host + '/sysback/supplyarea/getSupplySaleAreaProudctListInner?menuId=281&buttonId=2'
+                data = {"nowPage": 1, "pageShow": 10, "searchParam": "[{\"name\":\"categoryName\",\"value\":\"\"},{\"name\":\"productName\",\"value\":\"\"},{\"name\":\"brandName\",\"value\":\"\"},{\"name\":\"spuNo\",\"value\":\"\"},{\"name\":\"skuNo\",\"value\":\"" +comParison['skuNo'] + "\"},{\"name\":\"supplierCode\",\"value\":\"\"},{\"name\":\"supplierName\",\"value\":\"\"},{\"name\":\"saleAreaName\",\"value\":\"\"},{\"name\":\"saleProvinceName\",\"value\":\"\"},{\"name\":\"categoryName_q\",\"value\":\"Like\"},{\"name\":\"productName_q\",\"value\":\"Like\"},{\"name\":\"brandName_q\",\"value\":\"Like\"},{\"name\":\"spuNo_q\",\"value\":\"EQ\"},{\"name\":\"skuNo_q\",\"value\":\"EQ\"},{\"name\":\"supplierCode_q\",\"value\":\"EQ\"},{\"name\":\"supplierName_q\",\"value\":\"Like\"},{\"name\":\"saleAreaName_q\",\"value\":\"Like\"},{\"name\":\"saleProvinceName_q\",\"value\":\"Like\"}]", "sortName": "", "sortType": ""}
+                try:
+                    res = requests.post(url, headers=self.json_header, json=data).json()
+                except Exception as e:
+                    assert False, '接口请求失败, {}\n{}'.format(url, e)
+                assert res['retMessage'] == '', '查询供货信息报错:\n{}'.format(res['retMessage'])
+                time.sleep(3)
+                if res['retData']['results'] != []:
+                    assert res['retData']['totalNum'] != '', 'url : {} \n 入参 : {} \n 结果 : {} \n 供货信息未查询到sku信息 \n SkunNo: {}'.format(url, data, res['retMessage'], comParison['skuNo'])
+                    print('查询供货信息成功\nSkuNo: {} '.format(comParison['skuNo']))
+                    break
+                print('查询供货信息失败,重新尝试请求{}/{}'.format(calc, total))
+                calc += 1
+            else:
+                assert False, '查询供货信息失败,请检查sku准入是否完成! \nskuNo:{} '.format(comParison['skuNo'])
 
-        CalcUnit = sample(CalcUnitList, 1)[0]
-        # print(CalcUnit)
-        return CalcUnit
+        for i in res['retData']['results']:
+            assert i['brandName'] == comParison['brandName'], 'url: {}\n入参: {}\n结果: {}\n品牌名称不相同\n原品牌名称: {}\n现品牌名称: {}'.format(url, data, res['retMessage'], comParison['brandName'], i['brandName'])
+            assert i['supplierCode'] == '11297', 'url: {}\n入参: {}\n结果: {}\n供应商编码不相同\n原供应商编码: {}\n现供应商编码: {}'.format(url, data, res['retMessage'], comParison['supplierCode'], i['supplierCode'])
+            # assert i['specDetailStr'] == str(comParison['specDetailStr']), 'url: {}\n入参: {}\n结果: {}\n商品规格不相同\n原商品规格: {}\n现商品规格: {}'.format(url, data, res['retMessage'], comParison['specDetailStr'], i['specDetailStr'])
+            assert i['specDetailStr'] != '', 'url: {}\n入参: {}\n结果: {}\n商品规格为空'.format(url, data, res['retMessage'])
+            assert set(i['saleAreaCodes']) == set(comParison['saleAreaCode']), 'url: {}\n入参: {}\n结果: {}\n销售区域不相同\n原销售区域: {}\n现销售区域: {}'.format(url, data, res['retMessage'], comParison['saleAreaCode'], i['saleAreaCodes'])
+            assert i['mainUnit'] == str(comParison['mainUnitName']), 'url: {}\n入参: {}\n结果: {}\n主计量单位不相同\n原主计量单位: {}\n现主计量单位: {}'.format(url, data, res['retMessage'], comParison['mainUnitId'], i['mainUnitId'])
+            assert i['purchasePriceType'] == str(comParison['purchasePriceType']), 'url: {}\n入参: {}\n结果: {}\n进价类型不相同\n原进价类型: {}\n现进价类型: {}'.format(url, data, res['retMessage'], comParison['purchasePriceType'], i['purchasePriceType'])
+            assert i['salepriceSkuDTO']['addPriceTypeName'] == str(comParison['addPriceTypeStr']), 'url: {}\n入参: {}\n结果: {}\n加价类型不相同\n原加价类型: {}\n现加价类型: {}'.format(url, data, res['retMessage'], comParison['addPriceTypeStr'], i['salepriceSkuDTO']['addPriceTypeName'])
+
+            # 加逻辑判断，根据姜提供的集合判断是否有参照
+            # 将传过来的参照城市信息转成列表
+            tempSelf = list(comParison['tempSelf'])
+            tempOther = list(comParison['tempOther'])
+            for i in res['retData']['results']:
+                if i['templateCityUuid'] in tempSelf:
+                    assert int(i['mainPurchasePrice']) == comParison['mainPurchasePrice'], 'url: {}\n入参: {}\n结果: {}\n主计量进价不相同\n原主计量进价: {}\n现主计量进价: {}'.format(url, data, res['retMessage'], comParison['mainPurchasePrice'], i['salepriceSkuDTO']['mainUnitPrice'])
+                    assert int(i['salepriceSkuDTO']['mainUnitPrice']) == comParison['mainUnitCostPrice'], 'url: {}\n入参: {}\n结果: {}\n主计量成本价不相同\n原主计量成本价: {}\n现主计量成本价: {}'.format(url, data, res['retMessage'], comParison['mainUnitCostPrice'], int(i['salepriceSkuDTO']['mainUnitPrice']))
+                    assert int(i['salepriceSkuDTO']['salePrice']) == int(comParison['salePrice']), 'url: {}\n入参: {}\n结果: {}\n主计量售价不相同\n原主计量售价: {}\n现主计量售价: {}'.format(url, data, res['retMessage'], comParison['salePrice'], i['salepriceSkuDTO']['mainUnitPrice'])
+                elif i['templateCityUuid'] in tempOther:
+                    assert int(i['mainPurchasePrice']) == comParison['mainPurchasePrice'], 'url: {}\n入参: {}\n结果: {}\n主计量进价不相同\n原主计量进价: {}\n现主计量进价: {}'.format(url, data, res['retMessage'], comParison['mainPurchasePrice'], i['salepriceSkuDTO']['mainUnitPrice'])
+                    assert int(i['salepriceSkuDTO']['mainUnitPrice']) == comParison['mainUnitCostPrice'], 'url: {}\n入参: {}\n结果: {}\n主计量成本价不相同\n原主计量成本价: {}\n现主计量成本价: {}'.format(url, data, res['retMessage'], comParison['mainUnitCostPrice'], int(i['salepriceSkuDTO']['mainUnitPrice']))
+                    assert int(i['salepriceSkuDTO']['salePrice'])*2 == int(comParison['salePrice']), 'url: {}\n入参: {}\n结果: {}\n主计量售价不相同\n原主计量售价: {}\n现主计量售价: {}'.format(url, data, res['retMessage'], comParison['salePrice'], int(i['salepriceSkuDTO']['mainUnitPrice'])*2)
+                else:
+                    assert False, '获取参照数据异常\n参照自己: {}\n参照别人: {}\n当前参照数据:\nskuNo: {}\n销售省: {}\n参照区域: {}'.format(comParison['tempSelf'], comParison['tempOther'], comParison['skuNo'], i['saleProvinceUuid'], i['templateCityUuid'])
+        print('验证供货信息查询数据结束')
+
+        # print('=====================================')
+        # print(comParison['tempSelf'])
+        # print('=====================================')
+        # print(comParison['tempOther'])
