@@ -6,6 +6,7 @@ import alterProductPrice
 import alterProductBasicInfo
 import viewProduct
 import ImportantPointTest
+import threading
 
 
 
@@ -29,7 +30,6 @@ def run_flow(env):
         obj_view.run(info)
         obj_alterPrice.run(info)
         obj_alterBasic.run(info)
-        flow_flag = True
     except Exception as e:
         flow_flag = False
         word = '测试环境:{}\n{}'.format(env,e)
@@ -50,7 +50,6 @@ def run_single(env):
     obj = ImportantPointTest.Test()
     try:
         obj.run()
-        single_flag = True
     except Exception as e:
         single_flag = False
         word = '测试环境:{}\n{}'.format(env,e)
@@ -62,13 +61,16 @@ def run_single(env):
         return
 
 
-flow_flag = False
-single_flag = False
+flow_flag = True
+single_flag = True
 def main():
     LoginInfo.dingToken = sys.argv[2]
+    environ = sys.argv[1]
+
     # LoginInfo.dingToken = 'https://oapi.dingtalk.com/robot/send?access_token=e68f44036d2948f7942fc1d4ee10bb8718e42545f87dac2b324b6e7ced94351a'
-    a = 't4'
-    if sys.argv[1] == 't4':
+    # environ = 't4'
+
+    if environ == 't4':
         print('测试环境:t4')
         LoginInfo.host = LoginInfo.t4_host
         LoginInfo.token = LoginInfo.t4_token
@@ -83,9 +85,13 @@ def main():
         LoginInfo.form_header['cookie'] = 'uc_token={}'.format(LoginInfo.token)
         LoginInfo.json_header['cookie'] = 'uc_token={}'.format(LoginInfo.token)
 
+    t1 = threading.Thread(target=run_flow, args=(environ, ))
+    t2 = threading.Thread(target=run_single, args=(environ, ))
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
 
-    run_flow(sys.argv[1])
-    run_single(sys.argv[1])
 
     if flow_flag and single_flag:
         print('测试结束, 全程未发现错误')

@@ -26,7 +26,7 @@ class ProductManagement(CommonFunction):
         CalcUnit = sample(CalcUnitList, 1)[0]
         # print(CalcUnit)
         return CalcUnit
-        
+
     def SpuManagement(self, JycList):
         print('开始验证SPU管理')
         #查询创建得SPU是否存在
