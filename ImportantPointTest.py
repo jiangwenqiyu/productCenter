@@ -2,6 +2,7 @@ from environmentConfig import LoginInfo
 import requests
 import random
 import time
+import json
 
 excep_temp = '\nurl:{}\ndata:{}\nexception:{}'
 error_temp = '\nurl:{}\ndata:{}\nres:{}'
@@ -20,7 +21,7 @@ class alterCosePrice(LoginInfo):
         except Exception as e:
             assert False, '批量修改进价，查询sku请求失败\nurl:{}\ndata:{}\nexception:{}'.format(url, data, e)
 
-        assert res['retStatus'] == '1', '批量修改进价，查询sku返回失败{}'.format(error_temp.format(url, data, res))
+        assert res['retStatus'] == '1', '批量修改进价，首次查询sku返回失败{}'.format(error_temp.format(url, data, res))
 
         totalNum = res['retData']['totalNum']
         page = int(totalNum / 1000)
@@ -32,7 +33,7 @@ class alterCosePrice(LoginInfo):
         except Exception as e:
             assert False, '批量修改进价，查询sku请求失败{}'.format(excep_temp.format(url, data, e))
 
-        assert res['retStatus'] == '1', '批量修改进价，查询sku返回失败{}'.format(error_temp.format(url, data, res))
+        assert res['retStatus'] == '1', '批量修改进价，二次查询sku返回失败{}'.format(error_temp.format(url, data, res))
         rel = random.sample(res['retData']['results'], 500)
 
         ret_result = []
@@ -132,6 +133,7 @@ class alterCosePrice(LoginInfo):
         print('暂存成功, {}'.format(recordNo))
 
         # 提交
+        print('正在提交')
         url = self.host + '/sysback/supplyareaprice/commitSupplyPrice?recordNo={}&menuId=270&buttonId=2'.format(recordNo)
         data = {}
         try:
@@ -208,10 +210,6 @@ class alterCosePrice(LoginInfo):
             assert fact[3] == exp[3], '进价单据,成本价现值,与提交时候的现值不一致\n单据:{}\n定位行:{}\n提交现值:{}\n单据现值:{}'.format(recordNo, key, exp[3], fact[3])
         print('表单数据比对结束, 未发现异常')
 
-    # 对比完进价数据, 查看售价单据
-
-
-
 
     # 大量修改进价
     def alterCostPrice(self):
@@ -231,10 +229,232 @@ class alterCosePrice(LoginInfo):
 
         self.compareData(exp_priceInfo, recordNo)
 
+        # 返回单据的信息,给判断售价用
+        return exp_priceInfo, recordNo
+
+
+class viewSalePrice(alterCosePrice):
+    # 创建数据字典   sku-销售省:成本价    修改进价单据中，所有被影响到的主供城市
+    def getSupplySkuCityInfo(self, info):
+        print('获取主供城市，成本变动的数据字典')
+        # 先把数据去重，得到供应商-sku，然后在查询信息
+        query_condition = set()
+        for i in info:
+            w = '{},{}'.format(i[0], i[1])
+            query_condition.add(w)
+
+        # 查询供应商-sku-销售省-被参照城市-成本比例-成本（只看是主供的）
+        print('供应商-sku维度,查询所有的省信息')
+        url = self.host + '/sysback/supplyarea/getSupplySaleAreaProudctListInner?menuId=281&buttonId=2'
+        supplyInfo = []
+        for rel in query_condition:
+            temp = []
+            a = rel.split(',')
+            supply = a[0]
+            skuNo = a[1]
+            data = {"nowPage":1,"pageShow":50,"searchParam":"[{\"name\":\"categoryName\",\"value\":\"\"},{\"name\":\"productName\",\"value\":\"\"},{\"name\":\"brandName\",\"value\":\"\"},{\"name\":\"spuNo\",\"value\":\"\"},{\"name\":\"skuNo\",\"value\":\"" + skuNo + "\"},{\"name\":\"supplierCode\",\"value\":\"" + supply + "\"},{\"name\":\"supplierName\",\"value\":\"\"},{\"name\":\"saleAreaName\",\"value\":\"\"},{\"name\":\"saleProvinceName\",\"value\":\"\"},{\"name\":\"categoryName_q\",\"value\":\"Like\"},{\"name\":\"productName_q\",\"value\":\"Like\"},{\"name\":\"brandName_q\",\"value\":\"Like\"},{\"name\":\"spuNo_q\",\"value\":\"EQ\"},{\"name\":\"skuNo_q\",\"value\":\"EQ\"},{\"name\":\"supplierCode_q\",\"value\":\"EQ\"},{\"name\":\"supplierName_q\",\"value\":\"Like\"},{\"name\":\"saleAreaName_q\",\"value\":\"Like\"},{\"name\":\"saleProvinceName_q\",\"value\":\"Like\"}]","sortName":"","sortType":""}
+            flag = False
+            for i in range(10):
+                try:
+                    res = requests.post(url, headers = self.json_header, json = data).json()
+                    assert res['retStatus'] == '1' and len(res['retData']['results']) != 0
+                    flag = True
+                    break
+                except:
+                    time.sleep(1.5)
+                    continue
+            assert flag, '查询供货信息获取数据失败\nrel:{}'.format(rel)
+            for i in res['retData']['results']:
+                if i['isMainSupply'] == '1':
+                    saleProvince = i['saleProvinceUuid']
+                    beTemplatedCity = i['templateCityUuid']
+                    tempRate = float(i['costPriceRatio'])
+                    cost = i['mainUnitCostPrice']
+                    temp.append(supply)
+                    temp.append(skuNo)
+                    temp.append(saleProvince)
+                    temp.append(beTemplatedCity)
+                    temp.append(tempRate)
+                    temp.append(cost)
+            supplyInfo.append(temp)
+        print('查询成功')
+
+        # 主供中，供应商、sku、被参照城市，与修改的一致，那么这个销售城市，就是会被影响的售价城市
+        print('获取被影响的主供城市, 以及按照比例计算后的成本价')
+        rel = dict()
+        for i in supplyInfo:
+            for x in info:
+                if i[0] == x[0] and i[1] == x[1] and i[3] == x[2]:  # 供应商、sku相同,且供货信息的被参照城市，等于修改进价的城市
+                    # 按照当前参照比例，计算应该的成本价
+                    currentCost = ((i[4] * 100) * (x[12])) / 10000
+                    # 构建数据字典  sku-销售省:成本价
+                    key = '{},{}'.format(i[1], i[2])
+                    rel[key] = currentCost
+
+        print('获取成功！')
+        return rel
+
+
+    # sku-主省:加价类型,现金加价率,分销差率,售价加价率
+    def getSalePriceInfo(self, info):
+        print('根据sku获取售价的数据字典')
+        url = self.host + '/sysback/salepriceskuupdate/getBySkuNos?menuId=299&buttonId=133'
+        data = []
+        sku_quchong = set()
+        for i in info:
+            sku_quchong.add(i[1])
+        data = list(sku_quchong)
+        flag = False
+        for i in range(10):
+            try:
+                res = requests.post(url, headers = self.json_header, json = data).json()
+                assert res['retStatus'] == '1', '售价关联sku失败\nurl:{}\ndata:{}\nres:{}'.format(url,data,res)
+                flag = True
+                break
+            except Exception as e:
+                print(e)
+        assert flag, '售价关联sku失败\nurl:{}\ndata:{}\nres:{}'.format(url,data,res)
+
+        # 构建数据字典
+        rel = dict()
+        for i in res['retData']['t']:
+            key = '{},{}'.format(i['skuNo'], i['provinceCode'])
+            value = '{},{},{},{}'.format(i['oldInput']['addPriceType'],i['oldInput']['cashAddRateOrMoney'],i['oldInput']['distribCashDiffRateOrMoney'],i['oldInput']['saleAddRateOrMoney'])
+            rel[key] = value
+
+        print('获取成功')
+        return rel
+
+
+    # 取交集，若存在，则有售价单据，若不存在，则不应有售价单据    返回期望的  sku-城市:成本价,现金价,分销价,售价
+    def judgeRecord(self, jinjia, shoujia):
+        print('判断是否应该生成售价单据')
+        jin = set()
+        for i in jinjia:
+            jin.add(i)
+
+        sale = set()
+        for i in shoujia:
+            sale.add(i)
+
+        if jin & sale != set():  # 返回期望的  sku-城市:成本价,现金价,分销价,售价
+            print('应该生成售价单据')
+            exp_data = dict()
+            jiaoji = jin & sale
+            for i in jiaoji:
+                temp = dict()
+                cost = jinjia[i]
+                obj = shoujia[i].split(',')
+                addType = float(obj[0])
+                cashRate = float(obj[1])
+                distributeRate = float(obj[2])
+                saleRate = float(obj[3])
+                print(cost, cashRate, distributeRate, saleRate)
+                print(type(cost), type(cashRate), type(distributeRate), type(saleRate))
+                if addType == '1':  # 金额
+                    cash = (cost*100 + cashRate*100) / 100
+                    distribute = (cash * 100 - distribute*100) / 100
+                    sale = (cost*100 + saleRate*100) / 100
+                else:                # 比例
+                    cash = (cost * 100 + (cost*100*(cashRate*100))/100) / 100
+                    distribute = ((cash * 100) * (distributeRate * 100)) / 10000
+                    sale = (cost*100 + ((cost*100) * (saleRate*100))/100) / 100
+
+                exp_data[i] = '{},{},{},{}'.format(cost, cash, distribute, sale)
+            print('交集字典构建成功')
+            return True, exp_data       # 应该生成单据
+
+        else:
+
+            print('不应该生成售价单据')
+            return False, ''      # 不应生成单据
+
+    def findRecord(self, status, record):
+        url = self.host + '/sysback/product/update/getSpuByRecord/querySpuList?menuId=270&buttonId=2'
+        record = record + "_1"
+        data = {"nowPage":1,"pageShow":10,"searchParam":"[{\"name\":\"spuNo\",\"value\":\"\"},{\"name\":\"productNameFinal\",\"value\":\"\"},{\"name\":\"recordNo\",\"value\":\"" + record + "\"},{\"name\":\"pusherName\",\"value\":\"\"},{\"name\":\"pusherDeptName\",\"value\":\"\"},{\"name\":\"pushTime\",\"value\":\"\"},{\"name\":\"commitType\",\"value\":\"\"},{\"name\":\"commitState\",\"value\":\"\"},{\"name\":\"spuNo_q\",\"value\":\"Like\"},{\"name\":\"productNameFinal_q\",\"value\":\"Like\"},{\"name\":\"recordNo_q\",\"value\":\"Like\"},{\"name\":\"pusherName_q\",\"value\":\"Like\"},{\"name\":\"pusherDeptName_q\",\"value\":\"Like\"},{\"name\":\"pushTime_q\",\"value\":\"RightLike\"},{\"name\":\"commitType_q\",\"value\":\"IN\"},{\"name\":\"commitState_q\",\"value\":\"Like\"}]","sortName":"","sortType":""}
+
+        flag = False
+        if status:
+            t = time.time() + 90
+
+            while time.time() < t:
+                try:
+                    res = requests.post(url, headers = self.json_header, json = data).json()
+                except Exception as e:
+                    continue
+
+                if len(res['retData']['results']) != 0:
+                    flag = True
+                    break
+        else:
+            res = requests.post(url, headers = self.json_header, json = data).json()
+            if len(res['retData']['results']) != 0:
+                assert False, '进价单据中没有符合的数据，不应生成售价单据\n单据号:{}'.format(record)
+            else:
+                pass
 
 
 
-class Test(alterCosePrice):
+    # 对比售价
+    def compareSalePrice(self, exp_data, record):
+        print('开始验证售价单据')
+        record = record + '_1'
+        url = self.host + '/sysback/salepriceskuupdate/getAllByBillUuid?isSaleMultiUnit=2&billUuid={}&menuId=270&buttonId=2'.format(record)
+        data = {"billUuid":record}
+        try:
+            res = requests.post(url, headers = self.json_header, json = data).json()
+        except Exception as e:
+            assert False, '查询自动生成的售价单据请求失败\n单据号:{}'.format(record)
+        assert res['retStatus'] == '1', '查询自动生成的售价单据返回失败\n单据号:{}'.format(record)
+
+        # 获取单据里的数据字典  sku-城市:成本价,现金价,分销价,售价
+        fact = dict()
+        fact_key = set()
+        for i in res['retData']['recordMainList']:
+            for x in i['recordDetailList']:
+                obj = json.loads(x['recordContent'])
+                key = '{},{}'.format(obj['nowInput']['skuNo'], obj['nowInput']['provinceCode'])
+                fact_key.add(key)
+                cost = obj['nowInput']['mainUnitPrice']
+                cash = obj['nowInput']['cashPrice']
+                dis = obj['nowInput']['cashDistribMoney']
+                sale = obj['nowInput']['salePrice']
+                fact[key] = '{},{},{},{}'.format(cost, cash, dis, sale)
+
+        exp_key = set()
+        for key in exp_data:
+            exp_key.add(key)
+
+        jiaoji_key = fact_key & exp_key
+        assert jiaoji_key != set(), '单据与预期的数据没有交集\n单据:{}\n预期的:{}'.format(record, exp_key)
+
+        for key in jiaoji_key:
+            fact_obj = fact[key].split(',')
+            exp_obj = exp_data[key].split(',')
+            assert float(fact_obj[0]) == float(exp_obj[0]), '判断自动生成的售价单据, 成本价不对\n单据:{}\n期望值:{}\n单据值:{}'.format(record, float(exp_obj[0]), float(fact_obj[0]))
+            assert float(fact_obj[1]) == float(exp_obj[1]), '判断自动生成的售价单据, 现金价不对\n单据:{}\n期望值:{}\n单据值:{}'.format(record, float(exp_obj[1]), float(fact_obj[1]))
+            assert float(fact_obj[2]) == float(exp_obj[2]), '判断自动生成的售价单据, 分销价不对\n单据:{}\n期望值:{}\n单据值:{}'.format(record, float(exp_obj[2]), float(fact_obj[2]))
+            assert float(fact_obj[3]) == float(exp_obj[3]), '判断自动生成的售价单据, 售价不对\n单据:{}\n期望值:{}\n单据值:{}'.format(record, float(exp_obj[3]), float(fact_obj[3]))
+        print('验证完成')
+
+
+
+    # 接收进价的单据信息
+    def viewInfo(self, info, record):
+        jinjia = self.getSupplySkuCityInfo(info)
+        shoujia = self.getSalePriceInfo(info)
+        status, exp_data = self.judgeRecord(jinjia, shoujia)
+        saleRecord = self.findRecord(status, record)
+        if saleRecord:
+            self.compareSalePrice(exp_data, record)
+        else:
+            print('没有售价单据,无需验证')
+            return
+
+
+
+class Test(viewSalePrice):
     # 参照比例
     def templateRate(self):
 
@@ -299,11 +519,16 @@ class Test(alterCosePrice):
     def run(self):
         print('\n*************************************************')
         print('校验参照比例')
-        self.templateRate()
+        # self.templateRate()
 
         print('\n*************************************************')
         print('大量修改进价')
-        self.alterCostPrice()
+        info, record = self.alterCostPrice()
+
+        print('\n*************************************************')
+        print('查看自动生成的售价单据')
+        self.viewInfo(info, record)
+
 
 
 # Test().run()
