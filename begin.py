@@ -30,7 +30,6 @@ def run_flow(env):
         obj_view.run(info)
         obj_alterPrice.run(info)
         obj_alterBasic.run(info)
-        flow_flag = True
     except Exception as e:
         flow_flag = False
         word = '测试环境:{}\n{}'.format(env,e)
@@ -51,7 +50,6 @@ def run_single(env):
     obj = ImportantPointTest.Test()
     try:
         obj.run()
-        single_flag = True
     except Exception as e:
         single_flag = False
         word = '测试环境:{}\n{}'.format(env,e)
@@ -63,8 +61,8 @@ def run_single(env):
         return
 
 
-flow_flag = False
-single_flag = False
+flow_flag = True
+single_flag = True
 def main():
     LoginInfo.dingToken = sys.argv[2]
     environ = sys.argv[1]

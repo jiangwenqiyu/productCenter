@@ -10,8 +10,8 @@ class alterCosePrice(LoginInfo):
     # 关联商品获取  供应商-sku，500个
     def getSupplySku_500(self):
         print('查询500个商品')
-        self.host = 'http://product.t4.xinfangsheng.com'
-        self.json_header['cookie'] = 'uc_token=e957c609b1554018ae97fe1dc86e9cf1'
+        # self.host = 'http://product.t4.xinfangsheng.com'
+        # self.json_header['cookie'] = 'uc_token=e957c609b1554018ae97fe1dc86e9cf1'
 
         url = self.host + '/sysback/supplyskurel/getSupplySkuRelList?menuId=291&buttonId=133'
         data = {"nowPage":1,"pageShow":1,"supplyCode":"","supplyName":"","searchParam":"[{\"name\":\"productName_s\",\"value\":\"\"},{\"name\":\"spuNo_s\",\"value\":\"\"},{\"name\":\"skuNo_s\",\"value\":\"\"},{\"name\":\"isPurchaseMultiUnit_s\",\"value\":\"2\"},{\"name\":\"uuidNotInListStr_s\",\"value\":\"\"},{\"name\":\"uuidListStr_s\",\"value\":\"\"}]","isQueryRel":False}
@@ -124,13 +124,12 @@ class alterCosePrice(LoginInfo):
         # 暂存
         try:
             res = requests.post(url, headers = self.json_header, json = data).json()
-            print(data[0]['mainPurchasePriceFloatRadio'])
         except Exception as e:
             assert False, '修改进价暂存请求失败{}'.format(excep_temp.format(url, data, e))
 
         assert res['retStatus'] == '1', '修改进价暂存返回失败{}'.format(error_temp.format(url, data, res))
         recordNo = res['retData']['recordNo']
-        print('暂存成功')
+        print('暂存成功, {}'.format(recordNo))
 
         # 提交
         url = self.host + '/sysback/supplyareaprice/commitSupplyPrice?recordNo={}&menuId=270&buttonId=2'.format(recordNo)
@@ -153,12 +152,14 @@ class alterCosePrice(LoginInfo):
             return False
 
         if res['retData']['results'][0]['commitState'] == 'OK':
+            print('审核通过！')
             return True
         else:
             return False
 
     # 对比数据, 提交之后判断2分钟，如果状态没变过来，认为审批失败
     def compareData(self, exp_priceInfo, recordNo):
+        print('开始比对表单数据')
         url = self.host + '/sysback/supplyareaprice/getUpdateDetailByRecordNo?recordNo={}&menuId=270&buttonId=2'.format(recordNo)
         data = {}
         try:
@@ -167,6 +168,7 @@ class alterCosePrice(LoginInfo):
             assert False, '查询进价单据请求失败\nurl:{}\n单据:{}\nexc:{}'.format(url, recordNo, e)
 
         assert res['retStatus'] == '1', '查询进价单据返回失败\nurl:{}\n单据:{}\nres:{}'.format(url, recordNo, res)
+        print('表单数据获取成功, 开始构建数据字典')
         # 构建字典  供应商+sku+城市:进价原值、进价现值、成本价原值、成本价现值
         show_info = dict()
         show_key = set()
@@ -183,7 +185,32 @@ class alterCosePrice(LoginInfo):
         exp_info = dict()
         exp_key = set()
         for i in exp_priceInfo:
-            pass
+            key = '{},{},{}'.format(i[0], i[1], i[2])
+            temp = []
+            temp.append(i[5])
+            temp.append(i[11])
+            temp.append(i[10])
+            temp.append(i[12])
+            exp_info[key] = temp
+            exp_key.add(key)
+
+        # 判断行数
+        assert len(show_key) == len(res['retData']['listDetail']), '进价单据中，按照供应商-sku-城市维度,存在重复行数据\n单据:{}'.format(recordNo)
+        assert show_key ^ exp_key == set(), '进价单据，提交时候的数据行数，与查看单据的行数，不一致\n单据:{}\n提交-单据:{}\n单据-提交:{}'.format(recordNo, exp_key-show_key, show_key-exp_key)
+
+        # 对比进价原值、现值
+        for key in show_key:
+            fact = show_info[key]
+            exp = exp_info[key]
+            assert fact[0] == exp[0], '进价单据,进价原值,与提交时候的原值不一致\n单据:{}\n定位行:{}\n提交原值:{}\n单据原值:{}'.format(recordNo, key, exp[0], fact[0])
+            assert fact[1] == exp[1], '进价单据,进价现值,与提交时候的现值不一致\n单据:{}\n定位行:{}\n提交现值:{}\n单据现值:{}'.format(recordNo, key, exp[1], fact[1])
+            assert fact[2] == exp[2], '进价单据,成本价原值,与提交时候的原值不一致\n单据:{}\n定位行:{}\n提交原值:{}\n单据原值:{}'.format(recordNo, key, exp[2], fact[2])
+            assert fact[3] == exp[3], '进价单据,成本价现值,与提交时候的现值不一致\n单据:{}\n定位行:{}\n提交现值:{}\n单据现值:{}'.format(recordNo, key, exp[3], fact[3])
+        print('表单数据比对结束, 未发现异常')
+
+    # 对比完进价数据, 查看售价单据
+
+
 
 
     # 大量修改进价
@@ -200,8 +227,7 @@ class alterCosePrice(LoginInfo):
                 break
             time.sleep(2)
 
-        if flag == False:
-            assert False, '修改进价单据审核失败, {}'.format(recordNo)
+        assert flag, '修改进价单据审核失败, {}'.format(recordNo)
 
         self.compareData(exp_priceInfo, recordNo)
 
@@ -273,11 +299,11 @@ class Test(alterCosePrice):
     def run(self):
         print('\n*************************************************')
         print('校验参照比例')
-        # self.templateRate()
+        self.templateRate()
 
         print('\n*************************************************')
         print('大量修改进价')
         self.alterCostPrice()
 
 
-Test().run()
+# Test().run()
