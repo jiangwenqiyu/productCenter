@@ -367,6 +367,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url2, headers=self.json_header, json=data2).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data2, res['retMessage'])
         Record = res['retData']['recordNo']
         assert res['retData']['commitState'] == 'NOT', 'url : {} \n 入参: {} \n 结果: {} \n 暂存失败\n '.format(url, data, res['retMessage'])
         assert res['retData']['recordNo'] != '', 'url : {} \n 入参: {} \n 结果: {} \n 修改管理信息暂存失败 \n '.format(url, data, res['retMessage'])
