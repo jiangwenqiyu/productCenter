@@ -10,7 +10,6 @@ class ProductManagement(CommonFunction):
         self.SpuManagement(JycList)  #已完成
         self.SkuManagement(JycList)  #已完成
 
-
     def GetCalcUnit(self):
         CalcUnitList = list()
         url = self.host + '/sysback/unit/baseQueryList?menuId=253&buttonId=148'
