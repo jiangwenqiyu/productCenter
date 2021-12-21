@@ -64,11 +64,11 @@ def run_single(env):
 flow_flag = True
 single_flag = True
 def main():
-    LoginInfo.dingToken = sys.argv[2]
-    environ = sys.argv[1]
+    # LoginInfo.dingToken = sys.argv[2]
+    # environ = sys.argv[1]
 
-    # LoginInfo.dingToken = 'https://oapi.dingtalk.com/robot/send?access_token=e68f44036d2948f7942fc1d4ee10bb8718e42545f87dac2b324b6e7ced94351a'
-    # environ = 't4'
+    LoginInfo.dingToken = 'https://oapi.dingtalk.com/robot/send?access_token=e68f44036d2948f7942fc1d4ee10bb8718e42545f87dac2b324b6e7ced94351a'
+    environ = 't4'
 
     if environ == 't4':
         print('测试环境:t4')
@@ -85,11 +85,11 @@ def main():
         LoginInfo.form_header['cookie'] = 'uc_token={}'.format(LoginInfo.token)
         LoginInfo.json_header['cookie'] = 'uc_token={}'.format(LoginInfo.token)
 
-    t1 = threading.Thread(target=run_flow, args=(environ, ))
+    # t1 = threading.Thread(target=run_flow, args=(environ, ))
     t2 = threading.Thread(target=run_single, args=(environ, ))
-    t1.start()
+    # t1.start()
     t2.start()
-    t1.join()
+    # t1.join()
     t2.join()
 
 
