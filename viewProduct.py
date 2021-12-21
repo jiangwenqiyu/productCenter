@@ -7,8 +7,8 @@ from makeProduct import CommonFunction
 class ProductManagement(CommonFunction):
     def run(self, JycList):
         self.SupplyInfoQuerry(JycList)
-        self.SpuManagement(JycList)  #已完成
-        self.SkuManagement(JycList)  #已完成
+        # self.SpuManagement(JycList)  #已完成
+        # self.SkuManagement(JycList)  #已完成
 
     def GetCalcUnit(self):
         CalcUnitList = list()
@@ -68,7 +68,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers=self.form_header, data = data ).json()
         except Exception as e:
             assert False, '修改基本信息，接口请求失败\nurl:{}\ndata:{}\nexception:{}'.format(url, data, e)
-
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
         assert res['retStatus'] == '1', '修改基本信息，获取数据失败\nurl:{}\ndata:{}\nres:{}'.format(url, data, res)
         print('修改基本信息，获取数据成功')
         # for i in res['retData'][0]['attrList']:
@@ -108,6 +108,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers=self.json_header, json=newdata).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
         assert res['retStatus'] == '1', 'url : {} \n 入参 : {} \n 结果: {} \n 暂存失败'.format(url , data , res['retMessage'])
 
         # 修改Spu信息-提交
@@ -117,6 +118,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers=self.json_header, json=data).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
         assert res['retStatus'] == '1', '修改基本信息提交失败, url: {} \n ,结果: {} '.format(url, res['retMessage'])
         assert res['retData']['commitState'] == 'COMMIT', '修改基本信息提交失败, url: {} \n ,结果: {} '.format(url, res['retMessage'])
 
@@ -127,6 +129,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers=self.form_header, data = data).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
         assert res['retData'][0]['spuNo'] == JycList['spuNo'], 'spuNo 不正确 原SpuNo:{} \n 现SpuNo: {}'.format(JycList['spuNo'], res['retData']['spuNo'])
         # for i,j in res['retData'][0]['attrList'],NotspecList:
         #     print('现值: {} '.format(i['valueNameUpdate']))
@@ -140,6 +143,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers=self.json_header, json=data).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
         # print(res)
         assert res['retMessage'] == '', 'url : {} \n 入参 : {} \n 结果 : {} \n 获取Spu信息失败'.format(url, data, res['retMessage'])
         assert res['retData']['results'][0]['categoryPath'] != '','url : {} \n 入参 : {} \n 结果 : {} \n 缺少分类信息'.format(url , data , res['retMessage'])
@@ -155,6 +159,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers=self.json_header, json=dataa).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
 
         #品类信息
         # 执行判断原值与新增时候的值是否一致
@@ -180,6 +185,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers = self.json_header, json=data).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
         # 拼接完整的品牌名称  包含厂商名称
         productName =JycList['brandName']+' '+JycList['productName']
         # 判断页面的值是否与新增时候的值一致
@@ -207,6 +213,7 @@ class ProductManagement(CommonFunction):
             res = requests.get(url, headers=self.json_header, json=data).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
         # 主图 等后续姜传值
         assert res['retData']['mainImage']['trimmingKey'] != '', 'url : {} \n 结果 : {}主图不存在'.format(url, res['retMessage'])
 
@@ -234,6 +241,7 @@ class ProductManagement(CommonFunction):
                     res = requests.post(url, headers=self.json_header, json=data).json()
                 except Exception as e:
                     assert False, '接口请求失败, {}\n{}'.format(url, e)
+                assert res['retMessage'] == '', '亲求报错：{}'.format(res['retMessage'])
                 print('获取数据失败,重试ing.....')
                 time.sleep(9)
                 if res['retData']['results'] != []:
@@ -242,6 +250,7 @@ class ProductManagement(CommonFunction):
                     break
             else:
                 assert False, '请求失败,请检查sku准入是否完成! \nskuNo:{} '.format(JycList['skuNo'])
+
         # sku 管理信息
         print('开始对比Sku管理信息数据')
         url = self.host + '/sysback/update/product/allmanaging/queryAllManagingListFromSpu?menuId=253&buttonId=148'
@@ -250,6 +259,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers=self.form_header, data=data).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '亲求报错：{}'.format(res['retMessage'])
         #比对Sku管理区域
         assert res['retData'][0]['manageList'][0]['valueName'] == JycList['manage_area_ch'], 'url : {} \n 入参 : {} \n 结果 : {} \n sku管理区域不同 \n 管理区域原值: {} \n 管理区域现值: {}'.format(url, data, res['retMessage'], JycList['manage_area_ch'], res['retData'][0]['manageList'][0]['valueName'])
         # 对比合作模式
@@ -382,6 +392,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers=self.json_header, json=data).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data2, res['retMessage'])
         # print(res)
         # print(res['retData']['commitStateStr'])
         assert res['retData']['commitStateStr'] != '', 'url : {} \n 入参: {} \n 结果: {} \n 修改管理信息提交失败，暂存失败 \n '.format(url, data, res['retMessage'])
@@ -396,6 +407,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers=self.form_header, data=data).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data2, res['retMessage'])
         # 对比提交数据和现在数据是否一致
         print('对比Sku管理区域')
         assert res['retData'][0]['manageList'][0]['valueNameUpdate'] == TestData['inputList'][0]['manageList'][0]['valueNameUpdate'], 'url : {} \n 入参 : {} \n 结果 : {} \n sku管理区域不同 \n 管理区域原值: {} \n 管理区域现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['manageList'][0]['valueNameUpdate'], res['retData'][0]['manageList'][0]['valueName'])
@@ -440,7 +452,8 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers=self.form_header, data=data).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
-
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data2, res['retMessage'])
+        # 判断数据是否一致
         assert res['retData'][0]['safetyRate'] == str(JycList['safetyRate']), 'url: {} \n 入参: {}\n 结果: {}\n 安全率/金额不正确 \n 原安全率/金额: {} \n 现安全率/金额: {} '.format(url, data, res['retMessage'], JycList['safetyRate'], res['retData'][0]['safetyRate'])
         assert res['retData'][0]['barcode'] == JycList['barcode'], 'url: {} \n 入参: {}\n 结果: {}\n 国际条形码不正确 \n 原国际条形码: {} \n 现国际条形码: {} '.format(url, data, res['retMessage'], JycList['barcode'], res['retData'][0]['barcode'])
         assert res['retData'][0]['saleMin'] == str(JycList['saleMin']), 'url: {} \n 入参: {}\n 结果: {}\n 最小起售量不正确 \n 原最小起售量: {} \n 现最小起售量: {} '.format(url, data, res['retMessage'], JycList['saleMin'], res['retData'][0]['saleMin'])
@@ -485,6 +498,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(url, headers=self.form_header, data=reuqestsdata).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data2, res['retMessage'])
         data = res['retData'][0]
         data['productKey'] = JycList['spuNo']
         data['safetyRateUpdate'] = randint(1, 20)
@@ -611,6 +625,7 @@ class ProductManagement(CommonFunction):
             CommitRes = requests.post(CommitUrl, headers=self.json_header, json=CommitData).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data2, res['retMessage'])
         # print(CommitRes)
         assert CommitRes['retData']['commitState'] == 'COMMIT', '提交失败 \n, 请检查入参: {} '.format(CommitData)
         print('执行提交成功')
@@ -622,6 +637,7 @@ class ProductManagement(CommonFunction):
             res = requests.post(CheckUrl, headers=self.form_header, data=CheckData).json()
         except Exception as e:
             assert False, '接口请求失败, {}\n{}'.format(url, e)
+        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data2, res['retMessage'])
         print('======================核对SKU提交数据开始=======================')
         assert res['retData'][0]['safetyRateUpdate'] == str(data['safetyRateUpdate']), 'url: {} \n 入参: {}\n 结果: {}\n 安全率/金额不正确 \n 提交的安全率/金额: {} \n 现安全率/金额: {} '.format(url, data, res['retMessage'], data['safetyRateUpdate'], res['retData'][0]['safetyRateUpdate'])
         assert res['retData'][0]['barcodeUpdate'] == data['barcodeUpdate'], 'url: {} \n 入参: {}\n 结果: {}\n 国际条形码不正确 \n 提交的国际条形码: {} \n 现国际条形码: {} '.format(url, data, res['retMessage'], data['barcodeUpdate'], res['retData'][0]['barcodeUpdate'])
@@ -710,7 +726,10 @@ class ProductManagement(CommonFunction):
                 calc += 1
             else:
                 assert False, '查询供货信息失败,请检查sku准入是否完成! \nskuNo:{} '.format(comParison['skuNo'])
-
+        # print('===============参照自己======================')
+        # print(comParison['tempSelf'])
+        # print('===============参照其他城市======================')
+        # print(comParison['tempOther'])
         for i in res['retData']['results']:
             assert i['brandName'] == comParison['brandName'], 'url: {}\n入参: {}\n结果: {}\n品牌名称不相同\n原品牌名称: {}\n现品牌名称: {}'.format(url, data, res['retMessage'], comParison['brandName'], i['brandName'])
             assert i['supplierCode'] == '11297', 'url: {}\n入参: {}\n结果: {}\n供应商编码不相同\n原供应商编码: {}\n现供应商编码: {}'.format(url, data, res['retMessage'], comParison['supplierCode'], i['supplierCode'])
@@ -722,23 +741,16 @@ class ProductManagement(CommonFunction):
             assert i['salepriceSkuDTO']['addPriceTypeName'] == str(comParison['addPriceTypeStr']), 'url: {}\n入参: {}\n结果: {}\n加价类型不相同\n原加价类型: {}\n现加价类型: {}'.format(url, data, res['retMessage'], comParison['addPriceTypeStr'], i['salepriceSkuDTO']['addPriceTypeName'])
 
             # 加逻辑判断，根据姜提供的集合判断是否有参照
-            # 将传过来的参照城市信息转成列表
-            tempSelf = list(comParison['tempSelf'])
-            tempOther = list(comParison['tempOther'])
             for i in res['retData']['results']:
-                if i['templateCityUuid'] in tempSelf:
-                    assert int(i['mainPurchasePrice']) == comParison['mainPurchasePrice'], 'url: {}\n入参: {}\n结果: {}\n主计量进价不相同\n原主计量进价: {}\n现主计量进价: {}'.format(url, data, res['retMessage'], comParison['mainPurchasePrice'], i['salepriceSkuDTO']['mainUnitPrice'])
-                    assert int(i['salepriceSkuDTO']['mainUnitPrice']) == comParison['mainUnitCostPrice'], 'url: {}\n入参: {}\n结果: {}\n主计量成本价不相同\n原主计量成本价: {}\n现主计量成本价: {}'.format(url, data, res['retMessage'], comParison['mainUnitCostPrice'], int(i['salepriceSkuDTO']['mainUnitPrice']))
-                    assert int(i['salepriceSkuDTO']['salePrice']) == int(comParison['salePrice']), 'url: {}\n入参: {}\n结果: {}\n主计量售价不相同\n原主计量售价: {}\n现主计量售价: {}'.format(url, data, res['retMessage'], comParison['salePrice'], i['salepriceSkuDTO']['mainUnitPrice'])
-                elif i['templateCityUuid'] in tempOther:
-                    assert int(i['mainPurchasePrice']) == comParison['mainPurchasePrice'], 'url: {}\n入参: {}\n结果: {}\n主计量进价不相同\n原主计量进价: {}\n现主计量进价: {}'.format(url, data, res['retMessage'], comParison['mainPurchasePrice'], i['salepriceSkuDTO']['mainUnitPrice'])
-                    assert int(i['salepriceSkuDTO']['mainUnitPrice']) == comParison['mainUnitCostPrice'], 'url: {}\n入参: {}\n结果: {}\n主计量成本价不相同\n原主计量成本价: {}\n现主计量成本价: {}'.format(url, data, res['retMessage'], comParison['mainUnitCostPrice'], int(i['salepriceSkuDTO']['mainUnitPrice']))
-                    assert int(i['salepriceSkuDTO']['salePrice'])*2 == int(comParison['salePrice']), 'url: {}\n入参: {}\n结果: {}\n主计量售价不相同\n原主计量售价: {}\n现主计量售价: {}'.format(url, data, res['retMessage'], comParison['salePrice'], int(i['salepriceSkuDTO']['mainUnitPrice'])*2)
+                assert int(i['mainPurchasePrice']) == int(comParison['mainPurchasePrice']), 'url: {}\n入参: {}\n结果: {}\n主计量进价不相同\n原主计量进价: {}\n现主计量进价: {}'.format(url, data, res['retMessage'], comParison['mainPurchasePrice'], int(i['mainPurchasePrice']))
+                # 判断主计量成本价
+                if int(i['mainUnitCostPrice']) == int(comParison['mainUnitCostPrice']):
+                    assert int(i['mainUnitCostPrice']) == int(comParison['mainUnitCostPrice']), 'url: {}\n入参: {}\n结果: {}\n主计量成本价不相同\n原主计量成本价: {}\n现主计量成本价: {}'.format(url, data, res['retMessage'], comParison['mainUnitCostPrice'], int(i['mainUnitCostPrice']))
                 else:
-                    assert False, '获取参照数据异常\n参照自己: {}\n参照别人: {}\n当前参照数据:\nskuNo: {}\n销售省: {}\n参照区域: {}'.format(comParison['tempSelf'], comParison['tempOther'], comParison['skuNo'], i['saleProvinceUuid'], i['templateCityUuid'])
+                    assert int(i['mainUnitCostPrice'])  == int(comParison['mainUnitCostPrice']) * 2, 'url: {}\n入参: {}\n结果: {}\n主计量成本价不相同\n原主计量成本价: {}\n现主计量成本价: {}'.format(url, data, res['retMessage'], int(comParison['mainUnitCostPrice']) * 2, int(i['mainUnitCostPrice']) )
+                # 判断主计量售价
+                if int(i['salepriceSkuDTO']['salePrice']) == int(comParison['salePrice']):
+                    assert int(i['salepriceSkuDTO']['salePrice']) == int(comParison['salePrice']), 'url: {}\n入参: {}\n结果: {}\n主计量售价不相同\n原主计量售价: {}\n现主计量售价: {}'.format(url, data, res['retMessage'], comParison['salePrice'], i['salepriceSkuDTO']['salePrice'])
+                else:
+                    assert int(i['salepriceSkuDTO']['salePrice']) * 2 == int(comParison['salePrice']), 'url: {}\n入参: {}\n结果: {}\n主计量售价不相同\n原主计量售价: {}\n现主计量售价: {}\n销售城市: {}\n参照城市: {}\n'.format(url, data, res['retMessage'], comParison['salePrice'], int(i['salepriceSkuDTO']['salePrice']) * 2, i['saleProvinceName'], i['tempalteCityName'])
         print('验证供货信息查询数据结束')
-
-        # print('=====================================')
-        # print(comParison['tempSelf'])
-        # print('=====================================')
-        # print(comParison['tempOther'])
