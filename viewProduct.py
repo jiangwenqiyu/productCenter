@@ -6,7 +6,7 @@ from makeProduct import CommonFunction
 
 class ProductManagement(CommonFunction):
     def run(self, JycList):
-        self.SupplyInfoQuerry(JycList)
+        self.SupplyInfoQuerry(JycList) #已完成
         self.SpuManagement(JycList)  #已完成
         self.SkuManagement(JycList)  #已完成
 
