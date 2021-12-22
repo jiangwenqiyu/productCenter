@@ -30,6 +30,7 @@ def run_flow(env):
         obj_view.run(info)
         obj_alterPrice.run(info)
         obj_alterBasic.run(info)
+        assert False, '流程测试结束, 未发现异常'
     except Exception as e:
         flow_flag = False
         word = '测试环境:{}\n{}'.format(env,e)
@@ -50,6 +51,7 @@ def run_single(env):
     obj = ImportantPointTest.Test()
     try:
         obj.run()
+        assert False, '单点测试结束，未发现异常'
     except Exception as e:
         single_flag = False
         word = '测试环境:{}\n{}'.format(env,e)
