@@ -3,6 +3,7 @@ import requests
 import random
 import time
 import json
+from _pydecimal import Decimal, Context, ROUND_HALF_UP
 
 
 excep_temp = '\nurl:{}\ndata:{}\nexception:{}'
@@ -66,12 +67,21 @@ class viewSalePrice(LoginInfo):
         try:
             for i in supplyInfoQuery:
                 for x in new_supplySkuCityPrice:
-                    if i[0] == x[0] and i[1] == x[1] and i[3] == x[2]:  # 供应商、sku相同,且供货信息的被参照城市，等于修改进价的城市
-                        # 按照当前参照比例，计算应该的成本价
-                        currentCost = ((i[4] * 100) * (x[12] * 100)) / 10000
-                        # 构建数据字典  sku-销售省:成本价
-                        key = '{},{}'.format(i[1], i[2])
-                        rel[key] = currentCost
+                    if x[3] == '2':
+                        if i[0] == x[0] and i[1] == x[1] and i[3] == x[2]:  # 供应商、sku相同,且供货信息的被参照城市，等于修改进价的城市
+                            # 按照当前参照比例，计算应该的成本价
+                            currentCost = ((i[4] * 100) * (x[12] * 100)) / 10000
+                            # 构建数据字典  sku-销售省:成本价
+                            key = '{},{}'.format(i[1], i[2])
+                            rel[key] = currentCost
+                    else:
+                        if i[0] == x[0] and i[1] == x[1]:  # 供应商、sku相同,且供货信息的被参照城市，等于修改进价的城市
+                            # 按照当前参照比例，计算应该的成本价
+                            currentCost = ((i[4] * 100) * (x[12] * 100)) / 10000
+                            # 构建数据字典  sku-销售省:成本价
+                            key = '{},{}'.format(i[1], i[2])
+                            rel[key] = currentCost
+
         except Exception as e:
             assert False, '发生异常, {}\n{}\n{}'.format(e,supplyInfoQuery, new_supplySkuCityPrice)
 
@@ -115,6 +125,8 @@ class viewSalePrice(LoginInfo):
 
     # 取交集，若存在，则有售价单据，若不存在，则不应有售价单据    返回期望的  sku-城市:成本价,现金价,分销价,售价
     def judgeRecord(self, skuProvinceCost, skuProvinceSale):
+
+
         print('判断是否应该生成售价单据')
         jin = set()
         for i in skuProvinceCost:
@@ -130,24 +142,68 @@ class viewSalePrice(LoginInfo):
             jiaoji = jin & sale
             for i in jiaoji:
                 temp = dict()
-                cost = skuProvinceCost[i]
+                cost = Context().create_decimal(skuProvinceCost[i]).quantize(Decimal('0.000'), rounding=ROUND_HALF_UP)
                 obj = skuProvinceSale[i].split(',')
-                addType = float(obj[0])
-                cashRate = float(obj[1])
-                distributeRate = float(obj[2])
-                saleRate = float(obj[3])
-                # print(cost, cashRate, distributeRate, saleRate)
-                # print(type(cost), type(cashRate), type(distributeRate), type(saleRate))
+                addType = obj[0]
+                cashRate = Context().create_decimal(obj[1]).quantize(Decimal('0.000'), rounding=ROUND_HALF_UP)
+                distributeRate = Context().create_decimal(obj[2]).quantize(Decimal('0.000'), rounding=ROUND_HALF_UP)
+                saleRate = Context().create_decimal(obj[3]).quantize(Decimal('0.000'), rounding=ROUND_HALF_UP)
+
                 if addType == '1':  # 金额
-                    cash = round((cost*100 + cashRate*100) / 100, 2)
-                    distribute = round((cash * 100 - distribute*100) / 100, 2)
-                    sale = round((cost*100 + saleRate*100) / 100, 2)
+                    cash = cost + cashRate
+                    if cash < 5:
+                        cash = Context().create_decimal(cash).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+                    elif cash >=5 and cash <100:
+                        cash = Context().create_decimal(cash).quantize(Decimal('0.0'), rounding=ROUND_HALF_UP)
+                    else:
+                        cash = Context().create_decimal(cash).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
+
+                    distribute = cash - distributeRate
+                    if distribute < 5:
+                        distribute = Context().create_decimal(distribute).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+                    elif distribute >=5 and distribute <100:
+                        distribute = Context().create_decimal(distribute).quantize(Decimal('0.0'), rounding=ROUND_HALF_UP)
+                    else:
+                        distribute = Context().create_decimal(distribute).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
+
+
+                    sale = cost + saleRate
+                    if sale < 5:
+                        sale = Context().create_decimal(sale).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+                    elif sale >=5 and sale <100:
+                        sale = Context().create_decimal(sale).quantize(Decimal('0.0'), rounding=ROUND_HALF_UP)
+                    else:
+                        sale = Context().create_decimal(sale).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
+
                 else:                # 比例
-                    cash = round((cost * 100 + (cost*100*(cashRate*100))/100) / 100, 2)
-                    distribute = round(((cash * 100) * (distributeRate * 100)) / 10000, 2)
-                    sale = round((cost*100 + ((cost*100) * (saleRate*100))/100) / 100, 2)
+                    cash = cost +  cost * cashRate
+                    if cash < 5:
+                        cash = Context().create_decimal(cash).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+                    elif cash >=5 and cash <100:
+                        cash = Context().create_decimal(cash).quantize(Decimal('0.0'), rounding=ROUND_HALF_UP)
+                    else:
+                        cash = Context().create_decimal(cash).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
+
+                    distribute = cash * distributeRate
+                    if distribute < 5:
+                        distribute = Context().create_decimal(distribute).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+                    elif distribute >=5 and distribute <100:
+                        distribute = Context().create_decimal(distribute).quantize(Decimal('0.0'), rounding=ROUND_HALF_UP)
+                    else:
+                        distribute = Context().create_decimal(distribute).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
+
+                    sale = cost + cost * saleRate
+                    if sale < 5:
+                        sale = Context().create_decimal(sale).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+                    elif sale >=5 and sale <100:
+                        sale = Context().create_decimal(sale).quantize(Decimal('0.0'), rounding=ROUND_HALF_UP)
+                    else:
+                        sale = Context().create_decimal(sale).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
+
+                print(i, cost, cashRate, cash, distributeRate, distribute, saleRate, sale)
 
                 exp_data[i] = '{},{},{},{}'.format(cost, cash, distribute, sale)
+
             print('进价主供城市与售价主城市的交集字典,构建成功')
             return True, exp_data       # 应该生成单据
 
@@ -207,13 +263,20 @@ class viewSalePrice(LoginInfo):
         timeout = 180
         t = time.time() + timeout
         flag = False
+        repeat = 1
         while time.time() < t:   # 单据出来，里边的数据并不是实时的，加个判断，两分钟
+
             try:
                 res = requests.post(url, headers = self.json_header, json = data).json()
 
                 if res['retData']['recordMainList'] != [] and res['retStatus'] == '1':
-                    flag = True
-                    break
+                    if repeat == 1:
+                        time.sleep(10)
+                        repeat += 1
+                        continue
+                    else:
+                        flag = True
+                        break
                 else:
                     time.sleep(2)
                     continue
@@ -225,11 +288,11 @@ class viewSalePrice(LoginInfo):
         if flag == False:
             assert False, '查询自动生成的售价单据失败, 超过{}分钟没有查到数据\n单据:{}'.format(time / 60, record)
 
-        # 获取单据里的数据字典  sku-城市:成本价,现金价,分销价,售价
+        # 获取单据里的数据字典  sku-省:成本价,现金价,分销价,售价
         fact = dict()
         fact_key = set()
         fact_origin_current_value = dict()
-        print(res, '售价单据res')
+        # print(res, '售价单据res')
         for i in res['retData']['recordMainList']:
             for x in i['recordDetailList']:
                 obj = json.loads(x['recordContent'])
@@ -255,43 +318,53 @@ class viewSalePrice(LoginInfo):
 
         # 判断，主供城市且是售价主城市的，是否全在单据里了
         jiaoji_key = fact_key & exp_key
-        assert jiaoji_key == exp_key, '售价单据中，进价发生变动的主供城市，且售价为主城市的，没有影响到售价\n单据:{}\n未被影响到的:{}'.format(record, exp_key - jiaoji_key)
+        # print(exp_key - jiaoji_key)
+        assert jiaoji_key == exp_key, '售价单据中，进价发生变动的主供城市，且售价为主城市的，没有影响到售价\n单据:{}'.format(record, exp_key - jiaoji_key)
 
         assert jiaoji_key != set(), '自动生成的售价单据与预期的数据没有交集\n单据:{}\n进价单据所有受到影响的主供城市:{}\n售价单据里的数据:{}'.format(record, exp_key, fact_key)
 
 
-
+        print('验证被影响的售价')
         for key in jiaoji_key:
-            fact_obj = fact[key].split(',')
+
             exp_obj = exp_data[key].split(',')
-            expCash = float(exp_obj[1])
-            expDis = float(exp_obj[2])
-            expSale = float(exp_obj[3])
+            expCost = Context().create_decimal(exp_obj[0])
+            expCash = Context().create_decimal(exp_obj[1]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+            expDis = Context().create_decimal(exp_obj[2]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+            expSale = Context().create_decimal(exp_obj[3]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+
             if expCash < 5:
-                expCash = round(expCash, 2)
+                expCash = Context().create_decimal(expCash).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
             elif expCash >= 5 and expCash < 100:
-                expCash = round(expCash, 1)
+                expCash = Context().create_decimal(expCash).quantize(Decimal('0.0'), rounding=ROUND_HALF_UP)
             else:
-                expCash = int(round(expCash, 0))
+                expCash = Context().create_decimal(expCash).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
 
             if expDis < 5:
-                expDis = round(expDis, 2)
+                expDis = Context().create_decimal(expDis).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
             elif expDis >= 5 and expDis < 100:
-                expDis = round(expDis, 1)
+                expDis = Context().create_decimal(expDis).quantize(Decimal('0.0'), rounding=ROUND_HALF_UP)
             else:
-                expDis = int(round(expDis, 0))
+                expDis = Context().create_decimal(expDis).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
 
             if expSale < 5:
-                expSale = round(expSale, 2)
+                expSale = Context().create_decimal(expSale).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
             elif expSale >= 5 and expSale < 100:
-                expSale = round(expSale, 1)
+                expSale = Context().create_decimal(expSale).quantize(Decimal('0.0'), rounding=ROUND_HALF_UP)
             else:
-                expSale = int(round(expSale, 0))
+                expSale = Context().create_decimal(expSale).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
 
-            assert float(fact_obj[0]) == float(exp_obj[0]), '判断自动生成的售价单据, 成本价不对\n单据:{}\n期望值:{}\n单据值:{}\nrel:{}'.format(record, float(exp_obj[0]), float(fact_obj[0]), key)
-            assert float(fact_obj[1]) == expCash, '判断自动生成的售价单据, 现金价不对\n单据:{}\n期望值:{}\n单据值:{}\nrel:{}'.format(record, expCash, float(fact_obj[1]), key)
-            assert float(fact_obj[2]) == expDis, '判断自动生成的售价单据, 分销价不对\n单据:{}\n期望值:{}\n单据值:{}\nrel:{}'.format(record, expDis, float(fact_obj[2]), key)
-            assert float(fact_obj[3]) == expSale, '判断自动生成的售价单据, 售价不对\n单据:{}\n期望值:{}\n单据值:{}\nrel:{}'.format(record, expSale, float(fact_obj[3]), key)
+            record_obj = fact[key].split(',')
+            record_cost = Context().create_decimal(record_obj[0]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+            record_cash = Context().create_decimal(record_obj[1]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+            record_dis = Context().create_decimal(record_obj[2]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+            record_sale = Context().create_decimal(record_obj[3]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+
+
+            assert record_cost == expCost, '判断自动生成的售价单据, 成本价不对\n单据:{}\n期望值:{}\n单据值:{}\nsku-省编码:{}'.format(record, expCost, record_cost, key)
+            assert record_cash == expCash, '判断自动生成的售价单据, 现金价不对\n单据:{}\n期望值:{}\n单据值:{}\nsku-省编码:{}'.format(record, expCash, record_cash, key)
+            assert record_dis == expDis, '判断自动生成的售价单据, 分销价不对\n单据:{}\n期望值:{}\n单据值:{}\nsku-省编码:{}'.format(record, expDis, record_dis, key)
+            assert record_sale == expSale, '判断自动生成的售价单据, 售价不对\n单据:{}\n期望值:{}\n单据值:{}\nsku-省编码:{}'.format(record, expSale, record_sale, key)
 
         # 验证交集之外的数据，原值现值都是一致的
         print('验证不被影响的售价')
@@ -303,24 +376,97 @@ class viewSalePrice(LoginInfo):
                 assert obj[2] == obj[6], '判断自动生成的售价单据，不应该受到影响的分销价，却发生了变化\n单据:{}\n原值:{}\n现值:{}\nrel:{}'.format(record, obj[2], obj[6], key)
                 assert obj[3] == obj[7], '判断自动生成的售价单据，不应该受到影响的售价，却发生了变化\n单据:{}\n原值:{}\n现值:{}\nrel:{}'.format(record, obj[3], obj[7], key)
 
+        print('验证完成')
+        return fact_origin_current_value
 
+
+    # 最后验证cityprice
+    def verifyCityPrice(self, fact_origin_current_value, record):
+        '''
+        :param fact_origin_current_value:   sku-省编码:现成本、现金、分销、售价、 老成本、现金、分销、售价
+        :param skuNowValue: sku:[[省, 成本， 现金， 分销， 售价], [] ]
+        :return:
+        '''
+        # 等待3分钟cityPrice售价同步
+        # print(fact_origin_current_value)
+        time.sleep(10)
+        print('开始验证cityPrice是否生效')
+        url = self.cityPrice + '/srm/service/product/price/cityPrice'
+        data = {'skuNos':[]}
+
+        # 获取 sku:[[省, 成本， 现金， 分销， 售价], [] ]
+        skuNowValue = dict()
+        skuSet = set()
+        for key in fact_origin_current_value:
+            skuSet.add(key.split(',')[0])
+
+        for sku in skuSet:
+            temp = list()
+            for key in fact_origin_current_value:
+                temp1 = list()
+                obj = key.split(',')
+                if sku == obj[0]:
+                    t = fact_origin_current_value[key].split(',')
+
+                    temp1.append(obj[1])    # 城市、成本、现金、分销、售价
+                    temp1.append(t[0])
+                    temp1.append(t[1])
+                    temp1.append(t[2])
+                    temp1.append(t[3])
+                    temp.append(temp1)
+
+            skuNowValue[sku] = temp
+
+        for sku in skuNowValue:  # 获取sku下，所有省的价格
+            data['skuNos'] = [sku]
+            try:
+                res = requests.post(url, headers = self.json_header, json = data).json()
+            except Exception as e:
+                assert False, '请求cityprice异常, data:{}'.format(data)
+
+            assert res['retData'] != [], 'cityprice返回数据为空, data:{}'.format(data)
+
+            for info in skuNowValue[sku]:   # 单个省的价格
+                # print(info)
+                province = info[0]
+                # print(info[0])
+                # print(info[1])
+                # print(info[2])
+                # print(info[3])
+                # print(info[4])
+
+                expCost = Context().create_decimal(info[1]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+                expCash = Context().create_decimal(info[2]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+                expDis = Context().create_decimal(info[3]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+                expSale = Context().create_decimal(info[4]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+
+                for i in res['retData']:
+                    if i['provinceCode'] == province:
+                        assert Context().create_decimal(Decimal(i['costPrice'])).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(Decimal(expCost)).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,成本价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expCost, i['costPrice'], record)
+                        assert Context().create_decimal(Decimal(i['cashPrice'])).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(Decimal(expCash)).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,现金价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expCash, i['cashPrice'], record)
+                        assert Context().create_decimal(Decimal(i['cashDistribMoney'])).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(Decimal(expDis)).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,分销价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expDis, i['cashDistribMoney'], record)
+                        assert Context().create_decimal(Decimal(i['salePrice'])).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(Decimal(expSale)).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,售价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expSale, i['salePrice'], record)
+
+            time.sleep(1)
 
         print('验证完成')
+
 
 
     # 接收进价的单据信息
     def viewInfo(self, new_supplySkuCityPrice, record):
 
-        skuProvinceCost = self.getSupplySkuCityInfo(new_supplySkuCityPrice)
+        skuProvinceCost = self.getSupplySkuCityInfo(new_supplySkuCityPrice)  # 从供货信息获取  sku-供应商，下的主供信息
 
-        skuProvinceSale = self.getSalePriceInfo(new_supplySkuCityPrice)
+        skuProvinceSale = self.getSalePriceInfo(new_supplySkuCityPrice)   # 从修改售价页面，获取sku的价格组信息
 
         status, exp_data = self.judgeRecord(skuProvinceCost, skuProvinceSale)  # 返回售价主城市与进价主供存在交集的数据, 计算后的价格   sku-城市:成本价,现金价,分销价,售价
 
         isHaveRecord = self.findRecord(status, record)   # 查找有没有售价单据
 
         if isHaveRecord:
-            self.compareSalePrice(exp_data, record)
+            fact_origin_current_value = self.compareSalePrice(exp_data, record)
+            self.verifyCityPrice(fact_origin_current_value, record)
         else:
             print('没有售价单据,无需验证,进价测试结束')
             return
@@ -330,7 +476,8 @@ class alterCosePrice(viewSalePrice):
 
     # 查询获取  供应商-sku，500个
     def getSupplySku_500(self):
-        print('查询500个商品')
+        skuNum = 10
+        print('查询{}个商品'.format(skuNum))
         # self.host = 'http://product.t4.xinfangsheng.com'
         # self.json_header['cookie'] = 'uc_token=e957c609b1554018ae97fe1dc86e9cf1'
 
@@ -360,7 +507,7 @@ class alterCosePrice(viewSalePrice):
             assert False, '批量修改进价，查询sku请求失败{}'.format(excep_temp.format(url, data, e))
 
         assert res['retStatus'] == '1', '批量修改进价，二次查询sku返回失败{}'.format(error_temp.format(url, data, res))
-        rel = random.sample(res['retData']['results'], 500)
+        rel = random.sample(res['retData']['results'], skuNum)
 
         supplySku_500 = []
         for i in rel:
@@ -686,6 +833,7 @@ class Test(alterCosePrice):
 
         print('\n*************************************************')
         print('批量修改进价')
+        # self.alterCostPrice()
         try:
             self.alterCostPrice()
         except Exception as e:
