@@ -744,7 +744,7 @@ class alterCosePrice(viewSalePrice):
 
         assert flag, '修改进价单据审核失败, {}'.format(recordNo)
 
-        self.compareData(new_supplySkuCityPrice, recordNo)
+        self.compareData(new_supplySkuCityPrice, recordNo)   # 验证进价表单的数据，与修改的数据，是否都一样
 
         # 查询售价单据
         print('查看自动生成的售价单据')
