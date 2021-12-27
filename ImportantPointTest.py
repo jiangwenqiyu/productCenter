@@ -297,7 +297,7 @@ class viewSalePrice(LoginInfo):
             for x in i['recordDetailList']:
                 obj = json.loads(x['recordContent'])
                 key = '{},{}'.format(obj['nowInput']['skuNo'], obj['nowInput']['provinceCode'])
-                # print(key, '这是key')
+
                 fact_key.add(key)
                 cost = obj['nowInput']['mainUnitPrice']
                 cash = obj['nowInput']['cashPrice']
