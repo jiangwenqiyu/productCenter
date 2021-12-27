@@ -427,6 +427,7 @@ class viewSalePrice(LoginInfo):
                 except Exception as e:
                     if i == 9:
                         assert False, '请求cityprice异常, data:{}'.format(data)
+                    time.sleep(2)
 
 
             for info in skuNowValue[sku]:   # 单个省的价格
