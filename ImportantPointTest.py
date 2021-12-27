@@ -200,7 +200,7 @@ class viewSalePrice(LoginInfo):
                     else:
                         sale = Context().create_decimal(sale).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
 
-                print(i, cost, cashRate, cash, distributeRate, distribute, saleRate, sale)
+                # print(i, cost, cashRate, cash, distributeRate, distribute, saleRate, sale)
 
                 exp_data[i] = '{},{},{},{}'.format(cost, cash, distribute, sale)
 
@@ -419,12 +419,15 @@ class viewSalePrice(LoginInfo):
 
         for sku in skuNowValue:  # 获取sku下，所有省的价格
             data['skuNos'] = [sku]
-            try:
-                res = requests.post(url, headers = self.json_header, json = data).json()
-            except Exception as e:
-                assert False, '请求cityprice异常, data:{}'.format(data)
+            for i in range(10):
+                try:
+                    res = requests.post(url, headers = self.json_header, json = data).json()
+                    assert res['retData'] != [], 'cityprice返回数据为空, data:{}'.format(data)
+                    break
+                except Exception as e:
+                    if i == 9:
+                        assert False, '请求cityprice异常, data:{}'.format(data)
 
-            assert res['retData'] != [], 'cityprice返回数据为空, data:{}'.format(data)
 
             for info in skuNowValue[sku]:   # 单个省的价格
                 # print(info)
@@ -476,7 +479,7 @@ class alterCosePrice(viewSalePrice):
 
     # 查询获取  供应商-sku，500个
     def getSupplySku_500(self):
-        skuNum = 10
+        skuNum = 100
         print('查询{}个商品'.format(skuNum))
         # self.host = 'http://product.t4.xinfangsheng.com'
         # self.json_header['cookie'] = 'uc_token=e957c609b1554018ae97fe1dc86e9cf1'
