@@ -30,6 +30,7 @@ def run_flow(env):
         obj_view.run(info)
         obj_alterPrice.run(info)
         obj_alterBasic.run(info)
+        assert False, '流程测试结束, 未发现异常'
     except Exception as e:
         flow_flag = False
         word = '测试环境:{}\n{}'.format(env,e)
@@ -37,7 +38,7 @@ def run_flow(env):
                 'msgtype':'text'
                 }
         res = requests.post(LoginInfo.dingToken, json=data).json()
-        assert res['errmsg'] == 'ok', '钉钉报警失败'
+        assert res['errmsg'] == 'ok', '钉钉报警失败\n{}'.format(res)
         return
 
 
@@ -50,6 +51,7 @@ def run_single(env):
     obj = ImportantPointTest.Test()
     try:
         obj.run()
+        assert False, '单点测试结束，未发现异常'
     except Exception as e:
         single_flag = False
         word = '测试环境:{}\n{}'.format(env,e)
@@ -57,18 +59,18 @@ def run_single(env):
                 'msgtype':'text'
                 }
         res = requests.post(LoginInfo.dingToken, json=data).json()
-        assert res['errmsg'] == 'ok', '钉钉报警失败'
+        assert res['errmsg'] == 'ok', '钉钉报警失败\n{}'.format(res)
         return
 
 
 flow_flag = True
 single_flag = True
 def main():
-    # LoginInfo.dingToken = sys.argv[2]
-    # environ = sys.argv[1]
+    LoginInfo.dingToken = sys.argv[2]
+    environ = sys.argv[1]
 
-    LoginInfo.dingToken = 'https://oapi.dingtalk.com/robot/send?access_token=e68f44036d2948f7942fc1d4ee10bb8718e42545f87dac2b324b6e7ced94351a'
-    environ = 't4'
+    # LoginInfo.dingToken = 'https://oapi.dingtalk.com/robot/send?access_token=e68f44036d2948f7942fc1d4ee10bb8718e42545f87dac2b324b6e7ced94351a'
+    # environ = 't4'
 
     if environ == 't4':
         print('测试环境:t4')
@@ -85,11 +87,12 @@ def main():
         LoginInfo.form_header['cookie'] = 'uc_token={}'.format(LoginInfo.token)
         LoginInfo.json_header['cookie'] = 'uc_token={}'.format(LoginInfo.token)
 
-    # t1 = threading.Thread(target=run_flow, args=(environ, ))
+
+    t1 = threading.Thread(target=run_flow, args=(environ, ))
     t2 = threading.Thread(target=run_single, args=(environ, ))
-    # t1.start()
+    t1.start()
     t2.start()
-    # t1.join()
+    t1.join()
     t2.join()
 
 
