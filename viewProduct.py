@@ -652,7 +652,9 @@ class ProductManagement(CommonFunction):
         assert res['retData'][0]['singleEdge3Update'] == str(data['singleEdge3Update']), 'url: {} \n 入参: {}\n 结果: {}\n 单品最短边不正确 \n 提交的单品最短边: {} \n 现单品最短边: {} '.format(url, data, res['retMessage'], data['singleEdge3Update'], res['retData'][0]['singleEdge3Update'])
         assert res['retData'][0]['singleVolumeUpdate'] == str(data['singleVolumeUpdate']), 'url: {} \n 入参: {}\n 结果: {}\n 单品体积不正确 \n 提交的单品体积: {} \n 现单品体积: {} '.format(url, data, res['retMessage'], data['singleVolumeUpdate'], res['retData'][0]['singleVolumeUpdate'])
         assert res['retData'][0]['singleWeightUpdate'] == str(data['singleWeightUpdate']), 'url: {} \n 入参: {}\n 结果: {}\n 单品重量不正确 \n 提交的单品重量: {} \n 现单品重量: {} '.format(url, data, res['retMessage'], data['singleWeightUpdate'], res['retData'][0]['singleWeightUpdate'])
-        if res['retData'][0]['packageLayersUpdate'] == 'ONE':
+        if res['retData'][0]['packageLayersUpdate'] == 'SINGLE':
+            pass
+        elif res['retData'][0]['packageLayersUpdate'] == 'ONE':
             assert res['retData'][0]['onePackageUnitUpdate'] == data['onePackageUnitUpdate'], 'url: {} \n 入参: {}\n 结果: {}\n 一层包装单位不正确 \n 提交的一层包装单位: {} \n 现一层包装单位: {} '.format(url, data, res['retMessage'], data['onePackageUnitUpdate'], res['retData'][0]['onePackageUnitUpdate'])
             assert res['retData'][0]['onePackageCountUpdate'] == str(data['onePackageCountUpdate']), 'url: {} \n 入参: {}\n 结果: {}\n 一层包装数量不正确 \n 提交的一层包装数量: {} \n 现一层包装数量: {} '.format(url, data, res['retMessage'], data['onePackageCountUpdate'], res['retData'][0]['onePackageCountUpdate'])
             assert res['retData'][0]['oneEdge1Update'] == str(data['oneEdge1Update']), 'url: {} \n 入参: {}\n 结果: {}\n 一层最长边不正确 \n 提交的一层最长边: {} \n 现一层最长边: {} '.format(url, data, res['retMessage'], data['oneEdge1Update'], res['retData'][0]['oneEdge1Update'])
