@@ -74,7 +74,8 @@ class ProductManagement(CommonFunction):
         # for i in res['retData'][0]['attrList']:
         #     assert i['attrName'] == '', '' 啊
         # 判断Spu基本信息是否正确
-        assert res['retData'][0]['attrList'] !=[],'url : {} \n 入参 : {} \n 结果 : {} \n 基础属性获取失败'.format(url , data , res['retMessage'])
+        # assert res['retData'][0]['attrList'] !=[],'url : {} \n 入参 : {} \n 结果 : {} \n 基础属性获取失败'.format(url , data , res['retMessage'])
+        assert res['retData'][0]['productNameFinal'] == JycList['brandName'] + ' ' + JycList['productName'], 'SPU管理修改基本信息, 商品名称不对\nspu:{},exp:{}, fact:{}'.format(JycList['spuNo'], JycList['brandName'] + ' ' + JycList['productName'], res['retData'][0]['productNameFinal'])
         assert res['retData'][0]['spuNo'] == JycList['spuNo'],'spuNO 不正确，不符合创建时的 Spu, 创建时的 Spu : {}, 修改时的 Spu : {}'.format(JycList['spuNo'], res['redata'][0]['spuNo'])
         assert res['retData'][0]['productUuid'] == JycList['productUuid'] ,'productUuid 不正确，不符合创建时的 productUuid, 创建时的 productUuid : {}, 修改时的 productUuid : {}'.format(JycList['productUuid'], res['redata'][0]['productUuid'])
         # # 循环对比 属性原值和页面获取的值是否一致 ？？？ 需要后续修改

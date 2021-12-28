@@ -70,14 +70,14 @@ class viewSalePrice(LoginInfo):
                     if x[3] == '2':   # 如果是区域进价的
                         if i[0] == x[0] and i[1] == x[1] and i[3] == x[2]:  # 供应商、sku相同,且供货信息的被参照城市，等于修改进价的城市
                             # 按照当前参照比例，计算应该的成本价
-                            currentCost = ((i[4] * 100) * (x[12] * 100)) / 10000
+                            currentCost = Context().create_decimal( i[4] * Context().create_decimal(x[12]) ).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
                             # 构建数据字典  sku-销售省:成本价
                             key = '{},{}'.format(i[1], i[2])
                             rel[key] = currentCost
                     else:    # 全国统一价的
                         if i[0] == x[0] and i[1] == x[1]:  # 供应商、sku相同,且供货信息的被参照城市，等于修改进价的城市
                             # 按照当前参照比例，计算应该的成本价
-                            currentCost = ((i[4] * 100) * (x[12] * 100)) / 10000
+                            currentCost = Context().create_decimal( i[4] * Context().create_decimal(x[12]) ).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
                             # 构建数据字典  sku-销售省:成本价
                             key = '{},{}'.format(i[1], i[2])
                             rel[key] = currentCost

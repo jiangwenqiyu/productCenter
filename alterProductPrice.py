@@ -47,7 +47,7 @@ class changeSalePrice(LoginInfo):
 
 
 class changePrice(changeCostPrice, changeSalePrice):
-    def run(self):
+    def run(self, info):
         return
         print('\n*************************************************')
         print('修改进价')
