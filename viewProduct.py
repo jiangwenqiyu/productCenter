@@ -6,9 +6,9 @@ from makeProduct import CommonFunction
 
 class ProductManagement(CommonFunction):
     def run(self, JycList):
-        self.SupplyInfoQuerry(JycList) #已完成
-        self.SpuManagement(JycList)  #已完成
-        self.SkuManagement(JycList)  #已完成
+        self.SupplyInfoQuerry(JycList) #供货信息管理核对数据
+        self.SpuManagement(JycList)  #SPU管理核对数据
+        self.SkuManagement(JycList)  #SKU管理核对数据
 
     def GetCalcUnit(self):
         CalcUnitList = list()
