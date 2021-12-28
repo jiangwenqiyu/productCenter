@@ -11,9 +11,6 @@ import threading
 
 
 def run_flow(env):
-    # obj = makeProduct.MakePro()
-    # info = obj.run()
-    # print(info)  ttt
     print('-----------------------------------------------------------')
     print('-----------------------------------------------------------')
     print('开始流程测试')
@@ -49,6 +46,7 @@ def run_single(env):
     global single_flag
 
     obj = ImportantPointTest.Test()
+    testContent = '1.修改进价,所有城市进价+1\n2.对比进价单据原值与现值\n3.判断是否应生成售价单据\n4.判断售价单据中原值现值价格是否正确\n5.判断售价单据中未被影响的售价，原值现值是否一直\n6.对比cityPrice售价单据是否生效'
     try:
         obj.run()
         assert False, '单点测试结束，未发现异常'
@@ -69,12 +67,13 @@ def main():
     LoginInfo.dingToken = sys.argv[2]
     environ = sys.argv[1]
 
-    # LoginInfo.dingToken = 'https://oapi.dingtalk.com/robot/send?access_token=e68f44036d2948f7942fc1d4ee10bb8718e42545f87dac2b324b6e7ced94351a'
+    # LoginInfo.dingToken = 'https://oapi.dingtalk.com/robot/send?access_token=f7acf4dbf372ecedb2a93113aebf6eee6d8278de40599279f59a2774c5566ef5'
     # environ = 't4'
 
     if environ == 't4':
         print('测试环境:t4')
         LoginInfo.host = LoginInfo.t4_host
+        LoginInfo.cityPrice = LoginInfo.t4_cityPrice
         LoginInfo.token = LoginInfo.t4_token
         LoginInfo.cate = LoginInfo.t4_cate
         LoginInfo.form_header['cookie'] = 'uc_token={}'.format(LoginInfo.token)
@@ -82,6 +81,7 @@ def main():
     else:
         print('测试环境:仿真')
         LoginInfo.host = LoginInfo.fangzhen_host
+        LoginInfo.cityPrice = LoginInfo.fangzhen_cityPrice
         LoginInfo.token = LoginInfo.fangzhen_token
         LoginInfo.cate = LoginInfo.fangzhen_cate
         LoginInfo.form_header['cookie'] = 'uc_token={}'.format(LoginInfo.token)

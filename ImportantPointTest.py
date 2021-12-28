@@ -50,7 +50,7 @@ class viewSalePrice(LoginInfo):
                     temp = []
                     saleProvince = i['saleProvinceUuid']
                     beTemplatedCity = i['templateCityUuid']
-                    tempRate = float(i['costPriceRatio'])
+                    tempRate = Context().create_decimal(i['costPriceRatio'])
                     cost = i['mainUnitCostPrice']
                     temp.append(supply)
                     temp.append(skuNo)
@@ -67,14 +67,14 @@ class viewSalePrice(LoginInfo):
         try:
             for i in supplyInfoQuery:
                 for x in new_supplySkuCityPrice:
-                    if x[3] == '2':
+                    if x[3] == '2':   # 如果是区域进价的
                         if i[0] == x[0] and i[1] == x[1] and i[3] == x[2]:  # 供应商、sku相同,且供货信息的被参照城市，等于修改进价的城市
                             # 按照当前参照比例，计算应该的成本价
                             currentCost = ((i[4] * 100) * (x[12] * 100)) / 10000
                             # 构建数据字典  sku-销售省:成本价
                             key = '{},{}'.format(i[1], i[2])
                             rel[key] = currentCost
-                    else:
+                    else:    # 全国统一价的
                         if i[0] == x[0] and i[1] == x[1]:  # 供应商、sku相同,且供货信息的被参照城市，等于修改进价的城市
                             # 按照当前参照比例，计算应该的成本价
                             currentCost = ((i[4] * 100) * (x[12] * 100)) / 10000
@@ -431,13 +431,7 @@ class viewSalePrice(LoginInfo):
 
 
             for info in skuNowValue[sku]:   # 单个省的价格
-                # print(info)
                 province = info[0]
-                # print(info[0])
-                # print(info[1])
-                # print(info[2])
-                # print(info[3])
-                # print(info[4])
 
                 expCost = Context().create_decimal(info[1]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
                 expCash = Context().create_decimal(info[2]).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
@@ -446,15 +440,14 @@ class viewSalePrice(LoginInfo):
 
                 for i in res['retData']:
                     if i['provinceCode'] == province:
-                        assert Context().create_decimal(Decimal(i['costPrice'])).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(Decimal(expCost)).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,成本价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expCost, i['costPrice'], record)
-                        assert Context().create_decimal(Decimal(i['cashPrice'])).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(Decimal(expCash)).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,现金价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expCash, i['cashPrice'], record)
-                        assert Context().create_decimal(Decimal(i['cashDistribMoney'])).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(Decimal(expDis)).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,分销价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expDis, i['cashDistribMoney'], record)
-                        assert Context().create_decimal(Decimal(i['salePrice'])).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(Decimal(expSale)).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,售价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expSale, i['salePrice'], record)
+                        assert Context().create_decimal(i['costPrice']).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(expCost).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,成本价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expCost, i['costPrice'], record)
+                        assert Context().create_decimal(i['cashPrice']).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(expCash).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,现金价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expCash, i['cashPrice'], record)
+                        assert Context().create_decimal(i['cashDistribMoney']).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(expDis).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,分销价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expDis, i['cashDistribMoney'], record)
+                        assert Context().create_decimal(i['salePrice']).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(expSale).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,售价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expSale, i['salePrice'], record)
 
             time.sleep(1)
 
         print('验证完成')
-
 
 
     # 接收进价的单据信息
@@ -475,12 +468,13 @@ class viewSalePrice(LoginInfo):
             print('没有售价单据,无需验证,进价测试结束')
             return
 
+
 # 修改进价
 class alterCosePrice(viewSalePrice):
 
     # 查询获取  供应商-sku，500个
-    def getSupplySku_500(self):
-        skuNum = 100
+    def getSupplySku_500(self, skuNum):
+        # skuNum = 100
         print('查询{}个商品'.format(skuNum))
         # self.host = 'http://product.t4.xinfangsheng.com'
         # self.json_header['cookie'] = 'uc_token=e957c609b1554018ae97fe1dc86e9cf1'
@@ -523,7 +517,7 @@ class alterCosePrice(viewSalePrice):
 
         return supplySku_500
 
-    # 获取  0供应商-1sku-2城市-3进价类型-4加价类型-5进价-6运费比例-7包装比例-8加工比例-9返利比例-10成本价, 进价类型 1 全国统一  2 区域     加价类型  1金额  2比例   是否主供  1是 2否
+    # 获取  0供应商-1sku-2城市-3进价类型-4加价类型-5进价-6运费比例-7包装比例-8加工比例-9返利比例-10成本价, 进价类型 1 全国统一  2 区域     加价类型  1金额  2比例
     def getSupplySkuCityPrice(self, supplySku_500):
 
         # 修改进价，关联商品获取返回的行数信息
@@ -588,6 +582,7 @@ class alterCosePrice(viewSalePrice):
         for i in supplySkuCityPrice:
             w = '{},{},{}'.format(i[0], i[1], i[2])
             repeat.add(w)
+
         assert len(repeat) == len(supplySkuCityPrice), '修改进价获取到了重复行数据\nurl:{}\ndata:{}'.format(url, data)
 
 
@@ -652,9 +647,6 @@ class alterCosePrice(viewSalePrice):
         url = self.host + '/sysback/product/update/getSpuByRecord/querySpuList?menuId=270&buttonId=2'
         data = {"nowPage":1,"pageShow":10,"searchParam":"[{\"name\":\"spuNo\",\"value\":\"\"},{\"name\":\"productNameFinal\",\"value\":\"\"},{\"name\":\"recordNo\",\"value\":\"" + recordNo + "\"},{\"name\":\"pusherName\",\"value\":\"\"},{\"name\":\"pusherDeptName\",\"value\":\"\"},{\"name\":\"pushTime\",\"value\":\"\"},{\"name\":\"commitType\",\"value\":\"\"},{\"name\":\"commitState\",\"value\":\"\"},{\"name\":\"spuNo_q\",\"value\":\"Like\"},{\"name\":\"productNameFinal_q\",\"value\":\"Like\"},{\"name\":\"recordNo_q\",\"value\":\"Like\"},{\"name\":\"pusherName_q\",\"value\":\"Like\"},{\"name\":\"pusherDeptName_q\",\"value\":\"Like\"},{\"name\":\"pushTime_q\",\"value\":\"RightLike\"},{\"name\":\"commitType_q\",\"value\":\"IN\"},{\"name\":\"commitState_q\",\"value\":\"Like\"}]","sortName":"","sortType":""}
         try:
-            logInfo = '*****************************************\n修改进价单点测试:{}\n{}\n'.format(url, data)
-            with open('reqLog.txt', 'a') as f:
-                f.write(logInfo)
             res = requests.post(url, headers = self.json_header, json = data).json()
         except:
             return False
@@ -682,7 +674,7 @@ class alterCosePrice(viewSalePrice):
         assert res['retStatus'] == '1', '查询进价单据返回失败\nurl:{}\n单据:{}\nres:{}'.format(url, recordNo, res)
         print('表单数据获取成功, 开始构建数据字典')
 
-        # 构建字典  供应商+sku+城市:进价原值、进价现值、成本价原值、成本价现值
+        # 获取表单的数据    构建字典  供应商+sku+城市:进价原值、进价现值、成本价原值、成本价现值
         show_info = dict()
         show_key = set()
         sk = []
@@ -696,7 +688,8 @@ class alterCosePrice(viewSalePrice):
             show_info[key] = temp
             show_key.add(key)
             sk.append(key)
-        # 构建字典
+
+        # 处理传入的数据    构建字典   供应商+sku+城市:进价原值、进价现值、成本价原值、成本价现值
         exp_info = dict()
         exp_key = set()
         for i in exp_priceInfo:
@@ -709,7 +702,7 @@ class alterCosePrice(viewSalePrice):
             exp_info[key] = temp
             exp_key.add(key)
 
-        # 判断行数
+        # 判断单据中是否存在重复行数据
         if len(show_key) != len(res['retData']['listDetail']):
             for k in show_key:
                 for t in range(len(sk)):
@@ -719,6 +712,7 @@ class alterCosePrice(viewSalePrice):
 
             assert len(show_key) == len(res['retData']['listDetail']), '进价单据中，按照供应商-sku-城市维度,存在重复行数据\n单据:{}\n重复的内容:{}'.format(recordNo, sk)
 
+        # 判断单据与关联的数据，是否一致
         assert show_key ^ exp_key == set(), '进价单据，提交时候的数据行数，与查看单据的行数，不一致\n单据:{}\n提交-单据:{}\n单据-提交:{}'.format(recordNo, exp_key-show_key, show_key-exp_key)
 
         # 对比进价原值、现值
@@ -733,8 +727,8 @@ class alterCosePrice(viewSalePrice):
 
 
     # 大量修改进价
-    def alterCostPrice(self):
-        supplySku_500 = self.getSupplySku_500()
+    def alterCostPrice(self, skuNum):
+        supplySku_500 = self.getSupplySku_500(skuNum)
         supplySkuCityPrice, allInfo, skuLines = self.getSupplySkuCityPrice(supplySku_500)
         new_supplySkuCityPrice, recordNo = self.alterPurchasePrice(supplySkuCityPrice, allInfo, skuLines)
 
@@ -838,8 +832,9 @@ class Test(alterCosePrice):
         print('\n*************************************************')
         print('批量修改进价')
         # self.alterCostPrice()
+        skuNum = 100
         try:
-            self.alterCostPrice()
+            self.alterCostPrice(skuNum)
         except Exception as e:
             w += '验证修改进价异常:\n{}\n'.format(e)
 
