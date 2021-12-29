@@ -95,47 +95,50 @@ class ProductManagement(CommonFunction):
         NotspecList = res['retData'][0]['attrList']
 
         # 修改Spu信息-暂存
-        url = self.host + '/sysback/update/product/basicinfo/saveBasicInfo?menuId=252&buttonId=148'
-        data = {"inputList": [{"productKey": ""+JycList['productUuid']+"", "notSpecList":NotspecList}]}
-        try:
-            res = requests.post(url, headers=self.json_header, json=data).json()
-        except Exception as e:
-            assert False, '接口请求失败, {}\n{}'.format(url, e)
-        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
-        # 判断是否有单据暂存，如果有就获取单据号重新请求
-        Record = res['retData']['recordNo']
-        newdata = {"recordNo": ""+Record+"", "inputList": [{"productKey": ""+JycList['productUuid']+"", "notSpecList": NotspecList}]}
-        try:
-            res = requests.post(url, headers=self.json_header, json=newdata).json()
-        except Exception as e:
-            assert False, '接口请求失败, {}\n{}'.format(url, e)
-        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
-        assert res['retStatus'] == '1', 'url : {} \n 入参 : {} \n 结果: {} \n 暂存失败'.format(url , data , res['retMessage'])
+        if res['retData'][0]['attrList'] != []:
+            url = self.host + '/sysback/update/product/basicinfo/saveBasicInfo?menuId=252&buttonId=148'
+            data = {"inputList": [{"productKey": ""+JycList['productUuid']+"", "notSpecList":NotspecList}]}
+            try:
+                res = requests.post(url, headers=self.json_header, json=data).json()
+            except Exception as e:
+                assert False, '接口请求失败, {}\n{}'.format(url, e)
+            assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
+            # 判断是否有单据暂存，如果有就获取单据号重新请求
+            Record = res['retData']['recordNo']
+            newdata = {"recordNo": ""+Record+"", "inputList": [{"productKey": ""+JycList['productUuid']+"", "notSpecList": NotspecList}]}
+            try:
+                res = requests.post(url, headers=self.json_header, json=newdata).json()
+            except Exception as e:
+                assert False, '接口请求失败, {}\n{}'.format(url, e)
+            assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
+            assert res['retStatus'] == '1', 'url : {} \n 入参 : {} \n 结果: {} \n 暂存失败'.format(url , data , res['retMessage'])
 
-        # 修改Spu信息-提交
-        url = self.host + '/sysback/update/product/basicinfo/commitBasicInfo?recordNo={}'.format(Record)
-        data = {}
-        try:
-            res = requests.post(url, headers=self.json_header, json=data).json()
-        except Exception as e:
-            assert False, '接口请求失败, {}\n{}'.format(url, e)
-        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
-        assert res['retStatus'] == '1', '修改基本信息提交失败, url: {} \n ,结果: {} '.format(url, res['retMessage'])
-        assert res['retData']['commitState'] == 'COMMIT', '修改基本信息提交失败, url: {} \n ,结果: {} '.format(url, res['retMessage'])
+            # 修改Spu信息-提交
+            url = self.host + '/sysback/update/product/basicinfo/commitBasicInfo?recordNo={}'.format(Record)
+            data = {}
+            try:
+                res = requests.post(url, headers=self.json_header, json=data).json()
+            except Exception as e:
+                assert False, '接口请求失败, {}\n{}'.format(url, e)
+            assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
+            assert res['retStatus'] == '1', '修改基本信息提交失败, url: {} \n ,结果: {} '.format(url, res['retMessage'])
+            assert res['retData']['commitState'] == 'COMMIT', '修改基本信息提交失败, url: {} \n ,结果: {} '.format(url, res['retMessage'])
 
-        # 验证提交Spu数据是否生效
-        url = self.host + '/sysback/update/product/basicinfo/queryBasicInfoListFromSpu?menuId=252&buttonId=148' #.format(JycList['spuNo'])
-        data = {"productKey": "{}".format(JycList['productUuid'])}
-        try:
-            res = requests.post(url, headers=self.form_header, data = data).json()
-        except Exception as e:
-            assert False, '接口请求失败, {}\n{}'.format(url, e)
-        assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
-        assert res['retData'][0]['spuNo'] == JycList['spuNo'], 'spuNo 不正确 原SpuNo:{} \n 现SpuNo: {}'.format(JycList['spuNo'], res['retData']['spuNo'])
-        # for i,j in res['retData'][0]['attrList'],NotspecList:
-        #     print('现值: {} '.format(i['valueNameUpdate']))
-        #     print('原值: {} '.format(j['valueNameUpdata']))
-        # i['valueNameUpdate'] == j['valueNameUpdata']
+            # 验证提交Spu数据是否生效
+            url = self.host + '/sysback/update/product/basicinfo/queryBasicInfoListFromSpu?menuId=252&buttonId=148' #.format(JycList['spuNo'])
+            data = {"productKey": "{}".format(JycList['productUuid'])}
+            try:
+                res = requests.post(url, headers=self.form_header, data = data).json()
+            except Exception as e:
+                assert False, '接口请求失败, {}\n{}'.format(url, e)
+            assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data, res['retMessage'])
+            assert res['retData'][0]['spuNo'] == JycList['spuNo'], 'spuNo 不正确 原SpuNo:{} \n 现SpuNo: {}'.format(JycList['spuNo'], res['retData']['spuNo'])
+            # for i,j in res['retData'][0]['attrList'],NotspecList:
+            #     print('现值: {} '.format(i['valueNameUpdate']))
+            #     print('原值: {} '.format(j['valueNameUpdata']))
+            # i['valueNameUpdate'] == j['valueNameUpdata']
+        else:
+            assert res['retStatus'] == '1', '暂存接口请求错误,url: {}\n入参: {}\n报错信息: {}\nspuNo: {}'.format(url, data, res['retMessage'], JycList['spuNo'])
 
         print('Spu查看页面详情-商品基本信息')
         url = self.host + '/sysback/finish/spu/mgr/getSpuList?menuId=252&buttonId=2'
