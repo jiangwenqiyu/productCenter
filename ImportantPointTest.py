@@ -440,10 +440,10 @@ class viewSalePrice(LoginInfo):
 
                 for i in res['retData']:
                     if i['provinceCode'] == province:
-                        assert Context().create_decimal(i['costPrice']).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(expCost).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,成本价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expCost, i['costPrice'], record)
-                        assert Context().create_decimal(i['cashPrice']).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(expCash).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,现金价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expCash, i['cashPrice'], record)
-                        assert Context().create_decimal(i['cashDistribMoney']).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(expDis).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,分销价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expDis, i['cashDistribMoney'], record)
-                        assert Context().create_decimal(i['salePrice']).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(expSale).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,售价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}'.format(expSale, i['salePrice'], record)
+                        assert Context().create_decimal(i['costPrice']).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(expCost).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,成本价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}\nsku:{}'.format(expCost, i['costPrice'], record, sku)
+                        assert Context().create_decimal(i['cashPrice']).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(expCash).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,现金价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}\nsku:{}'.format(expCash, i['cashPrice'], record, sku)
+                        assert Context().create_decimal(i['cashDistribMoney']).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(expDis).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,分销价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}\nsku:{}'.format(expDis, i['cashDistribMoney'], record, sku)
+                        assert Context().create_decimal(i['salePrice']).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP) == Context().create_decimal(expSale).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP), 'cityPrice,售价与单据不一致\n单据值:{}\ncityPrice:{}\n单据号:{}\nsku:{}'.format(expSale, i['salePrice'], record, sku)
 
             time.sleep(1)
 
