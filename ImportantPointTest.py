@@ -389,7 +389,7 @@ class viewSalePrice(LoginInfo):
         '''
         # 等待3分钟cityPrice售价同步
         # print(fact_origin_current_value)
-        time.sleep(10)
+        time.sleep(180)
         print('开始验证cityPrice是否生效')
         url = self.cityPrice + '/srm/service/product/price/cityPrice'
         data = {'skuNos':[]}
