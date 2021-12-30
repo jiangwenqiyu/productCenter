@@ -331,12 +331,13 @@ class ProductManagement(CommonFunction):
                 i['valueUuidUpdate'] = i['allValueOptions'][randAreaNum]['optionValue']
         # 修改合作模式
             if i['attrName'] == '合作模式':
-                randCooperNum = randint(0, len(manageList[1]['allValueOptions']) - 1)
+                print(i)
+                randCooperNum = randint(0, len(i['allValueOptions']) - 1)
                 i['valueNameUpdate'] = i['allValueOptions'][randCooperNum]['optionHtml']
                 i['valueUuidUpdate'] = i['allValueOptions'][randCooperNum]['optionValue']
         # 修改经营模式
             if i['attrName'] == '经营模式':
-                randDealmodeNum = randint(0, len(manageList[2]['allValueOptions']) - 1)
+                randDealmodeNum = randint(0, len(i['allValueOptions']) - 1)
                 i['valueNameUpdate'] = i['allValueOptions'][randDealmodeNum]['optionHtml']
                 i['valueUuidUpdate'] = i['allValueOptions'][randDealmodeNum]['optionValue']
         # 修改包装清单
@@ -344,32 +345,32 @@ class ProductManagement(CommonFunction):
                 i['valueNameUpdate'] = self.getString(7)  # 预发布
         # 修改售价管理周期
             if i['attrName'] == '售价管理周期':
-                randSellCycleNum = randint(0, len(manageList[4]['allValueOptions']) - 1)
+                randSellCycleNum = randint(0, len(i['allValueOptions']) - 1)
                 i['valueNameUpdate'] = i['allValueOptions'][randSellCycleNum]['optionHtml']
                 i['valueUuidUpdate'] = i['allValueOptions'][randSellCycleNum]['optionValue']
         # 修改档次外部定位
             if i['attrName'] == '档次外部定位':
-                randOutposNum = randint(0, len(manageList[5]['allValueOptions']) - 1)
+                randOutposNum = randint(0, len(i['allValueOptions']) - 1)
                 i['valueNameUpdate'] = i['allValueOptions'][randOutposNum]['optionHtml']
                 i['valueUuidUpdate'] = i['allValueOptions'][randOutposNum]['optionValue']
         # 修改档次内部定位
             if i['attrName'] == '档次内部定位':
-                randInposNum = randint(0, len(manageList[6]['allValueOptions']) - 1)
-                i['valueNameUpdate'] = i[randInposNum]['optionHtml']
+                randInposNum = randint(0, len(i['allValueOptions']) - 1)
+                i['valueNameUpdate'] = i['allValueOptions'][randInposNum]['optionHtml']
                 i['valueUuidUpdate'] = i['allValueOptions'][randInposNum]['optionValue']
         # 修改囤货期
             if i['attrName'] == '囤货期':
-                randStockCycleNum = randint(0, len(manageList[7]['allValueOptions']) - 1)
+                randStockCycleNum = randint(0, len(i['allValueOptions']) - 1)
                 i['valueNameUpdate'] = i['allValueOptions'][randStockCycleNum]['optionHtml']
                 i['valueUuidUpdate'] = i['allValueOptions'][randStockCycleNum]['optionValue']
         # 修改是否季节性商品
             if i['attrName'] == '是否季节性商品':
-                randSeasonNum = randint(0, len(manageList[8]['allValueOptions']) - 1)
-                i['valueNameUpdate'] = i[randSeasonNum]['optionHtml']
+                randSeasonNum = randint(0, len(i['allValueOptions']) - 1)
+                i['valueNameUpdate'] = i['allValueOptions'][randSeasonNum]['optionHtml']
                 i['valueUuidUpdate'] = i['allValueOptions'][randSeasonNum]['optionValue']
         # 修改下架期
             if i['attrName'] == '下架期':
-                randSoldoutNum = randint(0, len(manageList[9]['allValueOptions']) - 1)
+                randSoldoutNum = randint(0, len(i['allValueOptions']) - 1)
                 i['valueNameUpdate'] = i['allValueOptions'][randSoldoutNum]['optionHtml']
                 i['valueUuidUpdate'] = i['allValueOptions'][randSoldoutNum]['optionValue']
         # 修改售卖平台
@@ -667,12 +668,12 @@ class ProductManagement(CommonFunction):
         print('执行暂存开始')
         try:
             SaveRes = requests.post(SaveUrl, headers=self.json_header, json=SaveData).json()
-            # print(SaveRes)
-            RecordCommit = SaveRes['retData']['recordNo']
+            print(SaveRes)
         except Exception as e:
-            assert False, '接口请求失败, {}\n{}'.format(url, e)
-        assert res['retMessage'] == '', '暂存失败\n{}'.format(res['retMessage'])
+            assert False, '接口请求失败, {}\n{}'.format(url, e, SaveRes['retMessage'])
+        assert SaveRes['retMessage'] == '', '暂存失败\n{}'.format(SaveRes['retMessage'])
         assert SaveRes['retData']['commitState'] == 'NOT', '暂存失败 \n, 请检查入参: {} '.format(SaveData)
+        RecordCommit = SaveRes['retData']['recordNo']
         print('执行暂存成功')
         # 提交
         print('执行提交开始')
