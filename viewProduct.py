@@ -265,29 +265,42 @@ class ProductManagement(CommonFunction):
             assert False, '接口请求失败, {}\n{}'.format(url, e)
         assert res['retMessage'] == '', '亲求报错：{}'.format(res['retMessage'])
         #比对Sku管理区域
-        assert res['retData'][0]['manageList'][0]['valueName'] == JycList['manage_area_ch'], 'url : {} \n 入参 : {} \n 结果 : {} \n sku管理区域不同 \n 管理区域原值: {} \n 管理区域现值: {}'.format(url, data, res['retMessage'], JycList['manage_area_ch'], res['retData'][0]['manageList'][0]['valueName'])
+        for i in res['retData'][0]['manageList']:
+            if i['attrName'] == '管理区域':
+                assert i['valueName'] == JycList['manage_area_ch'], 'url : {} \n 入参 : {} \n 结果 : {} \n sku管理区域不同 \n 管理区域原值: {} \n 管理区域现值: {}'.format(url, data, res['retMessage'], JycList['manage_area_ch'], i['valueName'])
         # 对比合作模式
-        assert res['retData'][0]['manageList'][1]['valueName'] == JycList['manage_cooperation'], 'url : {} \n 入参 : {} \n 结果 : {} \n sku合作模式不同 \n 合作模式原值: {} \n 合作模式现值: {}'.format(url, data, res['retMessage'], JycList['manage_cooperation'], res['retData'][0]['manageList'][1]['valueName'])
+            if i['attrName'] == '合作模式':
+                assert i['valueName'] == JycList['manage_cooperation'], 'url : {} \n 入参 : {} \n 结果 : {} \n sku合作模式不同 \n 合作模式原值: {} \n 合作模式现值: {}'.format(url, data, res['retMessage'], JycList['manage_cooperation'], i['valueName'])
         # 对比经营模式
-        assert res['retData'][0]['manageList'][2]['valueName'] == JycList['manage_dealmode'], 'url : {} \n 入参: {} \n 结果: {} \n 经营模式不同\n 经营模式原值: {} \n 经营模式现值: {}'.format(url, data, res['retMessage'], JycList['manage_dealmode'], res['retData'][0]['manageList'][2]['valueName'])
+            if i['attrName'] == '经营模式':
+                assert i['valueName'] == JycList['manage_dealmode'], 'url : {} \n 入参: {} \n 结果: {} \n 经营模式不同\n 经营模式原值: {} \n 经营模式现值: {}'.format(url, data, res['retMessage'], JycList['manage_dealmode'], i['valueName'])
         # 对比包装清单
-        assert res['retData'][0]['manageList'][3]['valueName'] == JycList['manage_packlist'], 'url : {} \n 入参: {} \n 结果: {} \n 包装清单不同\n 包装清单原值: {} \n 包装清单现值: {}'.format(url, data, res['retMessage'], JycList['manage_packlist'], res['retData'][0]['manageList'][3]['valueName'])
+            if i['attrName'] == '包装清单':
+                assert i['valueName'] == JycList['manage_packlist'], 'url : {} \n 入参: {} \n 结果: {} \n 包装清单不同\n 包装清单原值: {} \n 包装清单现值: {}'.format(url, data, res['retMessage'], JycList['manage_packlist'], i['valueName'])
         # 对比售价管理周期
-        assert res['retData'][0]['manageList'][4]['valueName'] == JycList['manage_sellmanageperiod'], 'url : {} \n 入参: {} \n 结果: {} \n 售价管理周期不同\n 售价管理周期原值: {} \n 售价管理周期现值: {}'.format(url, data, res['retMessage'], JycList['manage_sellmanageperiod'], res['retData'][0]['manageList'][4]['valueName'])
+            if i['attrName'] == '售价管理周期':
+                assert i['valueName'] == JycList['manage_sellmanageperiod'], 'url : {} \n 入参: {} \n 结果: {} \n 售价管理周期不同\n 售价管理周期原值: {} \n 售价管理周期现值: {}'.format(url, data, res['retMessage'], JycList['manage_sellmanageperiod'], i['valueName'])
         # 对比档次外部定位
-        assert res['retData'][0]['manageList'][5]['valueName'] == JycList['manage_outpos'], 'url : {} \n 入参: {} \n 结果: {} \n 档次外部定位不同\n 档次外部定位原值: {} \n 档次外部定位现值: {}'.format(url, data, res['retMessage'], JycList['manage_outpos'], res['retData'][0]['manageList'][5]['valueName'])
+            if i['attrName'] == '档次外部定位':
+                assert i['valueName'] == JycList['manage_outpos'], 'url : {} \n 入参: {} \n 结果: {} \n 档次外部定位不同\n 档次外部定位原值: {} \n 档次外部定位现值: {}'.format(url, data, res['retMessage'], JycList['manage_outpos'], i['valueName'])
         # 对比档次内部定位
-        assert res['retData'][0]['manageList'][6]['valueName'] == JycList['manage_inpos'], 'url : {} \n 入参: {} \n 结果: {} \n 档次内部定位不同\n 档次内部定位原值: {} \n 档次内部定位现值: {}'.format(url, data, res['retMessage'], JycList['manage_inpos'], res['retData'][0]['manageList'][6]['valueName'])
+            if i['attrName'] == '档次内部定位':
+                assert i['valueName'] == JycList['manage_inpos'], 'url : {} \n 入参: {} \n 结果: {} \n 档次内部定位不同\n 档次内部定位原值: {} \n 档次内部定位现值: {}'.format(url, data, res['retMessage'], JycList['manage_inpos'], i['valueName'])
         # 对比囤货期
-        assert res['retData'][0]['manageList'][7]['valueName'] == JycList['manage_stock_period'], 'url : {} \n 入参: {} \n 结果: {} \n 囤货期不同\n 囤货期原值: {} \n 囤货期现值: {}'.format(url, data, res['retMessage'], JycList['manage_stock_period'], res['retData'][0]['manageList'][7]['valueName'])
+            if i['attrName'] == '囤货期':
+                assert i['valueName'] == JycList['manage_stock_period'], 'url : {} \n 入参: {} \n 结果: {} \n 囤货期不同\n 囤货期原值: {} \n 囤货期现值: {}'.format(url, data, res['retMessage'], JycList['manage_stock_period'], i['valueName'])
         # 对比是否季节性商品
-        assert res['retData'][0]['manageList'][8]['valueName'] == JycList['manage_season_product'], 'url : {} \n 入参: {} \n 结果: {} \n 是否季节性商品不同\n 是否季节性商品原值: {} \n 是否季节性商品现值: {}'.format(url, data, res['retMessage'], JycList['manage_season_product'], res['retData'][0]['manageList'][8]['valueName'])
+            if i['attrName'] == '是否季节性商品':
+                assert i['valueName'] == JycList['manage_season_product'], 'url : {} \n 入参: {} \n 结果: {} \n 是否季节性商品不同\n 是否季节性商品原值: {} \n 是否季节性商品现值: {}'.format(url, data, res['retMessage'], JycList['manage_season_product'], i['valueName'])
         # 对比下架期
-        assert res['retData'][0]['manageList'][9]['valueName'] == JycList['manage_soldout_period'], 'url : {} \n 入参: {} \n 结果: {} \n 下架期不同\n 下架期原值: {} \n 下架期现值: {}'.format(url, data, res['retMessage'], JycList['manage_soldout_period'], res['retData'][0]['manageList'][9]['valueName'])
+            if i['attrName'] == '下架期':
+                assert i['valueName'] == JycList['manage_soldout_period'], 'url : {} \n 入参: {} \n 结果: {} \n 下架期不同\n 下架期原值: {} \n 下架期现值: {}'.format(url, data, res['retMessage'], JycList['manage_soldout_period'], i['valueName'])
         # 对比售卖平台
-        assert res['retData'][0]['marketingList'][0]['valueUuid'] == JycList['marketing_saleplat'], 'url : {} \n 入参: {} \n 结果: {} \n 售卖平台不同\n 售卖平台原值: {} \n 售卖平台现值: {}'.format(url, data, res['retMessage'], JycList['marketing_saleplat'], res['retData'][0]['marketingList'][0]['valueName'])
+            if i['attrName'] == '售卖平台':
+                assert i['valueUuid'] == JycList['marketing_saleplat'], 'url : {} \n 入参: {} \n 结果: {} \n 售卖平台不同\n 售卖平台原值: {} \n 售卖平台现值: {}'.format(url, data, res['retMessage'], JycList['marketing_saleplat'], res['retData'][0]['marketingList'][0]['valueName'])
         # 对比归类名称
-        assert res['retData'][0]['taxList'][0]['valueName'] == JycList['tax_classify'], 'url : {} \n 入参: {} \n 结果: {} \n 归类名称不同\n 归类名称原值: {} \n 归类名称现值: {}'.format(url, data, res['retMessage'], JycList['tax_classify'], res['retData'][0]['taxList'][0]['valueName'])
+            if i['attrName'] == '归类名称':
+                assert i['valueName'] == JycList['tax_classify'], 'url : {} \n 入参: {} \n 结果: {} \n 归类名称不同\n 归类名称原值: {} \n 归类名称现值: {}'.format(url, data, res['retMessage'], JycList['tax_classify'], res['retData'][0]['taxList'][0]['valueName'])
         #########################
         # 对比税类代码  后续姜提供
         #assert res['retData'][0]['taxList'][1]['valueName'] != '', 'url : {} \n 入参: {} \n 结果: {} \n 税类代码为空\n '.format(url, data, res['retMessage'])
@@ -311,43 +324,55 @@ class ProductManagement(CommonFunction):
 
         # 修改页面数据 传入json 做为暂存提交时的数据
         # 修改管理区域
-        randAreaNum = randint(0, len(manageList[0]['allValueOptions']) - 1)
-        manageList[0]['valueNameUpdate'] = manageList[0]['allValueOptions'][randAreaNum]['optionHtml']
-        manageList[0]['valueUuidUpdate'] = manageList[0]['allValueOptions'][randAreaNum]['optionValue']
+        for i in manageList:
+            if i['attrName'] == '管理区域':
+                randAreaNum = randint(0, len(i['allValueOptions']) - 1)
+                i['valueNameUpdate'] = i['allValueOptions'][randAreaNum]['optionHtml']
+                i['valueUuidUpdate'] = i['allValueOptions'][randAreaNum]['optionValue']
         # 修改合作模式
-        randCooperNum = randint(0, len(manageList[1]['allValueOptions']) - 1)
-        manageList[1]['valueNameUpdate'] = manageList[1]['allValueOptions'][randCooperNum]['optionHtml']
-        manageList[1]['valueUuidUpdate'] = manageList[1]['allValueOptions'][randCooperNum]['optionValue']
+            if i['attrName'] == '合作模式':
+                print(i)
+                randCooperNum = randint(0, len(i['allValueOptions']) - 1)
+                i['valueNameUpdate'] = i['allValueOptions'][randCooperNum]['optionHtml']
+                i['valueUuidUpdate'] = i['allValueOptions'][randCooperNum]['optionValue']
         # 修改经营模式
-        randDealmodeNum = randint(0, len(manageList[2]['allValueOptions']) - 1)
-        manageList[2]['valueNameUpdate'] = manageList[2]['allValueOptions'][randDealmodeNum]['optionHtml']
-        manageList[2]['valueUuidUpdate'] = manageList[2]['allValueOptions'][randDealmodeNum]['optionValue']
+            if i['attrName'] == '经营模式':
+                randDealmodeNum = randint(0, len(i['allValueOptions']) - 1)
+                i['valueNameUpdate'] = i['allValueOptions'][randDealmodeNum]['optionHtml']
+                i['valueUuidUpdate'] = i['allValueOptions'][randDealmodeNum]['optionValue']
         # 修改包装清单
-        manageList[3]['valueNameUpdate'] = self.getString(7)  # 预发布
+            if i['attrName'] == '包装清单':
+                i['valueNameUpdate'] = self.getString(7)  # 预发布
         # 修改售价管理周期
-        randSellCycleNum = randint(0, len(manageList[4]['allValueOptions']) - 1)
-        manageList[4]['valueNameUpdate'] = manageList[4]['allValueOptions'][randSellCycleNum]['optionHtml']
-        manageList[4]['valueUuidUpdate'] = manageList[4]['allValueOptions'][randSellCycleNum]['optionValue']
+            if i['attrName'] == '售价管理周期':
+                randSellCycleNum = randint(0, len(i['allValueOptions']) - 1)
+                i['valueNameUpdate'] = i['allValueOptions'][randSellCycleNum]['optionHtml']
+                i['valueUuidUpdate'] = i['allValueOptions'][randSellCycleNum]['optionValue']
         # 修改档次外部定位
-        randOutposNum = randint(0, len(manageList[5]['allValueOptions']) - 1)
-        manageList[5]['valueNameUpdate'] = manageList[5]['allValueOptions'][randOutposNum]['optionHtml']
-        manageList[5]['valueUuidUpdate'] = manageList[5]['allValueOptions'][randOutposNum]['optionValue']
+            if i['attrName'] == '档次外部定位':
+                randOutposNum = randint(0, len(i['allValueOptions']) - 1)
+                i['valueNameUpdate'] = i['allValueOptions'][randOutposNum]['optionHtml']
+                i['valueUuidUpdate'] = i['allValueOptions'][randOutposNum]['optionValue']
         # 修改档次内部定位
-        randInposNum = randint(0, len(manageList[6]['allValueOptions']) - 1)
-        manageList[6]['valueNameUpdate'] = manageList[6]['allValueOptions'][randInposNum]['optionHtml']
-        manageList[6]['valueUuidUpdate'] = manageList[6]['allValueOptions'][randInposNum]['optionValue']
+            if i['attrName'] == '档次内部定位':
+                randInposNum = randint(0, len(i['allValueOptions']) - 1)
+                i['valueNameUpdate'] = i['allValueOptions'][randInposNum]['optionHtml']
+                i['valueUuidUpdate'] = i['allValueOptions'][randInposNum]['optionValue']
         # 修改囤货期
-        randStockCycleNum = randint(0, len(manageList[7]['allValueOptions']) - 1)
-        manageList[7]['valueNameUpdate'] = manageList[7]['allValueOptions'][randStockCycleNum]['optionHtml']
-        manageList[7]['valueUuidUpdate'] = manageList[7]['allValueOptions'][randStockCycleNum]['optionValue']
+            if i['attrName'] == '囤货期':
+                randStockCycleNum = randint(0, len(i['allValueOptions']) - 1)
+                i['valueNameUpdate'] = i['allValueOptions'][randStockCycleNum]['optionHtml']
+                i['valueUuidUpdate'] = i['allValueOptions'][randStockCycleNum]['optionValue']
         # 修改是否季节性商品
-        randSeasonNum = randint(0, len(manageList[8]['allValueOptions']) - 1)
-        manageList[8]['valueNameUpdate'] = manageList[8]['allValueOptions'][randSeasonNum]['optionHtml']
-        manageList[8]['valueUuidUpdate'] = manageList[8]['allValueOptions'][randSeasonNum]['optionValue']
+            if i['attrName'] == '是否季节性商品':
+                randSeasonNum = randint(0, len(i['allValueOptions']) - 1)
+                i['valueNameUpdate'] = i['allValueOptions'][randSeasonNum]['optionHtml']
+                i['valueUuidUpdate'] = i['allValueOptions'][randSeasonNum]['optionValue']
         # 修改下架期
-        randSoldoutNum = randint(0, len(manageList[9]['allValueOptions']) - 1)
-        manageList[9]['valueNameUpdate'] = manageList[9]['allValueOptions'][randSoldoutNum]['optionHtml']
-        manageList[9]['valueUuidUpdate'] = manageList[9]['allValueOptions'][randSoldoutNum]['optionValue']
+            if i['attrName'] == '下架期':
+                randSoldoutNum = randint(0, len(i['allValueOptions']) - 1)
+                i['valueNameUpdate'] = i['allValueOptions'][randSoldoutNum]['optionHtml']
+                i['valueUuidUpdate'] = i['allValueOptions'][randSoldoutNum]['optionValue']
         # 修改售卖平台
         randSaleChannelNum = randint(0, len(marketingList[0]['allValueOptions']) - 1)
         marketingList[0]['valueNameUpdate'] = marketingList[0]['allValueOptions'][randSaleChannelNum]['optionHtml']
@@ -414,25 +439,56 @@ class ProductManagement(CommonFunction):
         assert res['retMessage'] == '', '请求报错,url: {}\n入参: {}\n结果: {}'.format(url, data2, res['retMessage'])
         # 对比提交数据和现在数据是否一致
         print('对比Sku管理区域')
-        assert res['retData'][0]['manageList'][0]['valueNameUpdate'] == TestData['inputList'][0]['manageList'][0]['valueNameUpdate'], 'url : {} \n 入参 : {} \n 结果 : {} \n sku管理区域不同 \n 管理区域原值: {} \n 管理区域现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['manageList'][0]['valueNameUpdate'], res['retData'][0]['manageList'][0]['valueName'])
+        for i in res['retData'][0]['manageList']:
+            if i['attrName'] == '管理区域':
+                for j in TestData['inputList'][0]['manageList']:
+                    if j['attrName'] == '管理区域':
+                        assert i['valueNameUpdate'] == j['valueNameUpdate'], 'url : {} \n 入参 : {} \n 结果 : {} \n sku管理区域不同 \n 管理区域原值: {} \n 管理区域现值: {}'.format(url, data, res['retMessage'], j['valueNameUpdate'], i['valueName'])
         # 对比合作模式
-        assert res['retData'][0]['manageList'][1]['valueNameUpdate'] == TestData['inputList'][0]['manageList'][1]['valueNameUpdate'], 'url : {} \n 入参 : {} \n 结果 : {} \n sku合作模式不同 \n 合作模式原值: {} \n 合作模式现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['manageList'][1]['valueNameUpdate'], res['retData'][0]['manageList'][1]['valueName'])
+            if i['attrName'] == '合作模式':
+                for j in TestData['inputList'][0]['manageList']:
+                    if j['attrName'] == '合作模式':
+                        assert i['valueNameUpdate'] == j['valueNameUpdate'], 'url : {} \n 入参 : {} \n 结果 : {} \n sku合作模式不同 \n 合作模式原值: {} \n 合作模式现值: {}'.format(url, data, res['retMessage'], j['valueNameUpdate'], i['valueName'])
         # 对比经营模式
-        assert res['retData'][0]['manageList'][2]['valueNameUpdate'] == TestData['inputList'][0]['manageList'][2]['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 经营模式不同\n 经营模式原值: {} \n 经营模式现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['manageList'][2]['valueNameUpdate'], res['retData'][0]['manageList'][2]['valueName'])
+            if i['attrName'] == '经营模式':
+                for j in TestData['inputList'][0]['manageList']:
+                    if j['attrName'] == '经营模式':
+                        assert i['valueNameUpdate'] == j['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 经营模式不同\n 经营模式原值: {} \n 经营模式现值: {}'.format(url, data, res['retMessage'], j['valueNameUpdate'], i['valueName'])
         # 对比包装清单
-        assert res['retData'][0]['manageList'][3]['valueNameUpdate'] == TestData['inputList'][0]['manageList'][3]['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 包装清单不同\n 包装清单原值: {} \n 包装清单现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['manageList'][3]['valueNameUpdate'], res['retData'][0]['manageList'][3]['valueName'])
+            if i['attrName'] == '包装清单':
+                for j in TestData['inputList'][0]['manageList']:
+                    if j['attrName'] == '包装清单':
+                        assert i['valueNameUpdate'] == j['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 包装清单不同\n 包装清单原值: {} \n 包装清单现值: {}'.format(url, data, res['retMessage'], j['valueNameUpdate'], i['valueName'])
         # 对比售价管理周期
-        assert res['retData'][0]['manageList'][4]['valueNameUpdate'] == TestData['inputList'][0]['manageList'][4]['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 售价管理周期不同\n 售价管理周期原值: {} \n 售价管理周期现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['manageList'][4]['valueNameUpdate'], res['retData'][0]['manageList'][4]['valueName'])
+            if i['attrName'] == '售价管理周期':
+                for j in TestData['inputList'][0]['manageList']:
+                    if j['attrName'] == '售价管理周期':
+                        assert i['valueNameUpdate'] == j['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 售价管理周期不同\n 售价管理周期原值: {} \n 售价管理周期现值: {}'.format(url, data, res['retMessage'], j['valueNameUpdate'], i['valueName'])
         # 对比档次外部定位
-        assert res['retData'][0]['manageList'][5]['valueNameUpdate'] == TestData['inputList'][0]['manageList'][5]['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 档次外部定位不同\n 档次外部定位原值: {} \n 档次外部定位现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['manageList'][5]['valueNameUpdate'], res['retData'][0]['manageList'][5]['valueName'])
+            if i['attrName'] == '档次外部定位':
+                for j in TestData['inputList'][0]['manageList']:
+                    if j['attrName'] == '档次外部定位':
+                        assert i['valueNameUpdate'] == j['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 档次外部定位不同\n 档次外部定位原值: {} \n 档次外部定位现值: {}'.format(url, data, res['retMessage'], j['valueNameUpdate'], i['valueName'])
         # 对比档次内部定位
-        assert res['retData'][0]['manageList'][6]['valueNameUpdate'] == TestData['inputList'][0]['manageList'][6]['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 档次内部定位不同\n 档次内部定位原值: {} \n 档次内部定位现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['manageList'][6]['valueNameUpdate'], res['retData'][0]['manageList'][6]['valueName'])
+            if i['attrName'] == '档次内部定位':
+                for j in TestData['inputList'][0]['manageList']:
+                    if j['attrName'] == '档次内部定位':
+                        assert i['valueNameUpdate'] == j['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 档次内部定位不同\n 档次内部定位原值: {} \n 档次内部定位现值: {}'.format(url, data, res['retMessage'], j['valueNameUpdate'], i['valueName'])
         # 对比囤货期
-        assert res['retData'][0]['manageList'][7]['valueNameUpdate'] == TestData['inputList'][0]['manageList'][7]['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 囤货期不同\n 囤货期原值: {} \n 囤货期现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['manageList'][7]['valueNameUpdate'], res['retData'][0]['manageList'][7]['valueName'])
+            if i['attrName'] == '囤货期':
+                for j in TestData['inputList'][0]['manageList']:
+                    if j['attrName'] == '囤货期':
+                        assert i['valueNameUpdate'] == j['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 囤货期不同\n 囤货期原值: {} \n 囤货期现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['manageList'][7]['valueNameUpdate'], res['retData'][0]['manageList'][7]['valueName'])
         # 对比是否季节性商品
-        assert res['retData'][0]['manageList'][8]['valueNameUpdate'] == TestData['inputList'][0]['manageList'][8]['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 是否季节性商品不同\n 是否季节性商品原值: {} \n 是否季节性商品现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['manageList'][8]['valueNameUpdate'], res['retData'][0]['manageList'][8]['valueName'])
+            if i['attrName'] == '是否季节性商品':
+                for j in TestData['inputList'][0]['manageList']:
+                    if j['attrName'] == '是否季节性商品':
+                        assert i['valueNameUpdate'] == j['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 是否季节性商品不同\n 是否季节性商品原值: {} \n 是否季节性商品现值: {}'.format(url, data, res['retMessage'], j['valueNameUpdate'], i['valueName'])
         # 对比下架期
-        assert res['retData'][0]['manageList'][9]['valueNameUpdate'] == TestData['inputList'][0]['manageList'][9]['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 下架期不同\n 下架期原值: {} \n 下架期现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['manageList'][9]['valueNameUpdate'], res['retData'][0]['manageList'][9]['valueName'])
+            if i['attrName'] == '下架期':
+                for j in TestData['inputList'][0]['manageList']:
+                    if j['attrName'] == '下架期':
+                        assert i['valueNameUpdate'] == j['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 下架期不同\n 下架期原值: {} \n 下架期现值: {}'.format(url, data, res['retMessage'], j['valueNameUpdate'], i['valueName'])
         # 对比售卖平台
         assert res['retData'][0]['marketingList'][0]['valueNameUpdate'] == TestData['inputList'][0]['marketingList'][0]['valueNameUpdate'], 'url : {} \n 入参: {} \n 结果: {} \n 售卖平台不同\n 售卖平台原值: {} \n 售卖平台现值: {}'.format(url, data, res['retMessage'], TestData['inputList'][0]['marketingList'][0]['valueNameUpdate'], res['retData'][0]['marketingList'][0]['valueName'])
         # 对比归类名称
@@ -612,12 +668,12 @@ class ProductManagement(CommonFunction):
         print('执行暂存开始')
         try:
             SaveRes = requests.post(SaveUrl, headers=self.json_header, json=SaveData).json()
-            # print(SaveRes)
-            RecordCommit = SaveRes['retData']['recordNo']
+            print(SaveRes)
         except Exception as e:
-            assert False, '接口请求失败, {}\n{}'.format(url, e)
-        assert res['retMessage'] == '', '暂存失败\n{}'.format(res['retMessage'])
+            assert False, '接口请求失败, {}\n{}'.format(url, e, SaveRes['retMessage'])
+        assert SaveRes['retMessage'] == '', '暂存失败\n{}'.format(SaveRes['retMessage'])
         assert SaveRes['retData']['commitState'] == 'NOT', '暂存失败 \n, 请检查入参: {} '.format(SaveData)
+        RecordCommit = SaveRes['retData']['recordNo']
         print('执行暂存成功')
         # 提交
         print('执行提交开始')
